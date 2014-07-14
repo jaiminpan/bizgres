@@ -179,4 +179,41 @@ DATA(insert OID = 2593 (	783		box_ops			PGNSP PGUID  603 t 0 ));
 DATA(insert OID = 2594 (	783		poly_ops		PGNSP PGUID  604 t 603 ));
 DATA(insert OID = 2595 (	783		circle_ops		PGNSP PGUID  718 t 603 ));
 
+/* the operators for the bitmap index */
+DATA(insert OID = 2849 (	2848	abstime_ops		PGNSP PGUID  702 t 0 ));
+DATA(insert OID = 2850 (	2848	array_ops		PGNSP PGUID 2277 t 0 ));
+DATA(insert OID = 2851 (	2848	bit_ops			PGNSP PGUID 1560 t 0 ));
+DATA(insert OID = 2852 (	2848	bool_ops		PGNSP PGUID   16 t 0 ));
+DATA(insert OID = 2853 (	2848	bpchar_ops		PGNSP PGUID 1042 t 0 ));
+DATA(insert OID = 2854 (	2848	bytea_ops		PGNSP PGUID   17 t 0 ));
+DATA(insert OID = 2855 (	2848	char_ops		PGNSP PGUID   18 t 0 ));
+DATA(insert OID = 2856 (	2848	cidr_ops		PGNSP PGUID  650 t 0 ));
+DATA(insert OID = 2857 (	2848	date_ops		PGNSP PGUID 1082 t 0 ));
+DATA(insert OID = 2858 (	2848	float4_ops		PGNSP PGUID  700 t 0 ));
+DATA(insert OID = 2859 (	2848	float8_ops		PGNSP PGUID  701 t 0 ));
+DATA(insert OID = 2860 (	2848	inet_ops		PGNSP PGUID  869 t 0 ));
+DATA(insert OID = 2861 (	2848	int2_ops		PGNSP PGUID   21 t 0 ));
+DATA(insert OID = 2862 (	2848	int4_ops        PGNSP PGUID   23 t 0 ));
+DATA(insert OID = 2863 (	2848	int8_ops		PGNSP PGUID   20 t 0 ));
+DATA(insert OID = 2864 (	2848	interval_ops	PGNSP PGUID 1186 t 0 ));
+DATA(insert OID = 2865 (	2848	macaddr_ops		PGNSP PGUID  829 t 0 ));
+DATA(insert OID = 2866 (	2848	name_ops		PGNSP PGUID   19 t 0 ));
+DATA(insert OID = 2867 (	2848	numeric_ops		PGNSP PGUID 1700 t 0 ));
+DATA(insert OID = 2868 (	2848	oid_ops			PGNSP PGUID   26 t 0 ));
+DATA(insert OID = 2869 (	2848	oidvector_ops	PGNSP PGUID   30 t 0 ));
+DATA(insert OID = 2870 (	2848	text_ops		PGNSP PGUID   25 t 0 ));
+DATA(insert OID = 2871 (	2848	time_ops		PGNSP PGUID 1083 t 0 ));
+DATA(insert OID = 2872 (	2848	timestamptz_ops PGNSP PGUID 1184 t 0 ));
+DATA(insert OID = 2873 (	2848	timetz_ops		PGNSP PGUID 1266 t 0 ));
+DATA(insert OID = 2874 (	2848	varbit_ops		PGNSP PGUID 1562 t 0 ));
+DATA(insert OID = 2875 (	2848	varchar_ops		PGNSP PGUID 1043 t 0 ));
+DATA(insert OID = 2876 (	2848	timestamp_ops	PGNSP PGUID 1114 t 0 ));
+DATA(insert OID = 2877 (	2848	text_pattern_ops	PGNSP PGUID   25 f 0 ));
+DATA(insert OID = 2878 (	2848	varchar_pattern_ops PGNSP PGUID 1043 f 0 ));
+DATA(insert OID = 2879 (	2848	bpchar_pattern_ops	PGNSP PGUID 1042 f 0 ));
+DATA(insert OID = 2880 (	2848	name_pattern_ops	PGNSP PGUID   19 f 0 ));
+DATA(insert OID = 2881 (	2848	money_ops		PGNSP PGUID  790 t 0 ));
+DATA(insert OID = 2882 (	2848	reltime_ops		PGNSP PGUID  703 t 0 ));
+DATA(insert OID = 2883 (	2848	tinterval_ops	PGNSP PGUID  704 t 0 ));
+
 #endif   /* PG_OPCLASS_H */

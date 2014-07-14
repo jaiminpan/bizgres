@@ -366,7 +366,7 @@ ExecTidRestrPos(TidScanState *node)
  * ----------------------------------------------------------------
  */
 TidScanState *
-ExecInitTidScan(TidScan *node, EState *estate)
+ExecInitTidScan(TidScan *node, EState *estate, int eflags)
 {
 	TidScanState *tidstate;
 	List	   *rangeTable;

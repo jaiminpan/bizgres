@@ -619,6 +619,8 @@ explain_outNode(StringInfo str,
 		case T_BitmapIndexScan:
 			appendStringInfo(str, " on %s",
 							 quote_identifier(get_rel_name(((BitmapIndexScan *) plan)->indexid)));
+			if (((BitmapIndexScan *) plan)->indexam == BITMAP_AM_OID)
+				appendStringInfo(str, "(on-disk bitmap index)");
 			break;
 		case T_SubqueryScan:
 			if (((Scan *) plan)->scanrelid > 0)

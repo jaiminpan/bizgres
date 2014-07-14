@@ -16,6 +16,8 @@
  *		index_close		- close an index relation
  *		index_beginscan - start a scan of an index with amgettuple
  *		index_beginscan_multi - start a scan of an index with amgetmulti
+ *		index_beginscan_bitmapwords - start a scan of an index with 
+ *									  amgetbitmapwords
  *		index_rescan	- restart a scan of an index
  *		index_endscan	- end a scan
  *		index_insert	- insert an index tuple into a relation
@@ -23,6 +25,7 @@
  *		index_restrpos	- restore a scan position
  *		index_getnext	- get the next tuple from a scan
  *		index_getmulti	- get multiple tuples from a scan
+ *		index_getbitmapwords - get several bitmap words from a scan
  *		index_bulk_delete	- bulk deletion of index tuples
  *		index_vacuum_cleanup	- post-deletion cleanup of an index
  *		index_getprocid - get a support procedure OID
@@ -271,6 +274,32 @@ index_beginscan_multi(Relation indexRelation,
 	 * up by RelationGetIndexScan.
 	 */
 	scan->is_multiscan = true;
+	scan->xs_snapshot = snapshot;
+
+	return scan;
+}
+
+/*
+ * index_beginscan_bitmapwords - start a scan of an index 
+ * 								 with amgetbitmapwords
+ *
+ * As above, caller had better be holding some lock on the parent heap
+ * relation, even though it's not explicitly mentioned here.
+ */
+IndexScanDesc
+index_beginscan_bitmapwords(Relation indexRelation,
+							Snapshot snapshot,
+							int nkeys, ScanKey key)
+{
+	IndexScanDesc scan;
+	RegProcedure procedure;
+
+	scan = index_beginscan_internal(indexRelation, nkeys, key);
+
+	/*
+	 * Save additional parameters into the scandesc.  Everything else was
+	 * set up by RelationGetIndexScan.
+	 */
 	scan->xs_snapshot = snapshot;
 
 	return scan;
@@ -658,6 +687,39 @@ index_getmulti(IndexScanDesc scan,
 									   PointerGetDatum(returned_tids)));
 
 	pgstat_count_index_tuples(&scan->xs_pgstat_info, *returned_tids);
+
+	return found;
+}
+
+/* ----------------
+ *		index_getbitmapwords - get several bitmap words from an index scan.
+ */
+bool
+index_getbitmapwords(IndexScanDesc	scan,
+					 uint32			maxNumOfWords,
+					 uint32			*returnedNumOfWords,
+					 BM_HRL_WORD*	headerWords,
+					 BM_HRL_WORD*	contentWords)
+{
+	FmgrInfo   *procedure;
+	bool		found;
+
+	SCAN_CHECKS;
+	GET_SCAN_PROCEDURE(amgetbitmapwords);
+
+	/* just make sure this is false... */
+	scan->kill_prior_tuple = false;
+
+	/*
+	 * have the am's getbitmapwords proc do all the work. 
+	   index_beginscan_bitmapwords already set up fn_getbitmapwords.
+	 */
+	found = DatumGetBool(FunctionCall5(procedure,
+									   PointerGetDatum(scan),
+									   Int32GetDatum(maxNumOfWords),
+									   PointerGetDatum(returnedNumOfWords),
+									   PointerGetDatum(headerWords),
+									   PointerGetDatum(contentWords)));
 
 	return found;
 }

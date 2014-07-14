@@ -41,7 +41,7 @@
  * ----------------------------------------------------------------
  */
 BitmapOrState *
-ExecInitBitmapOr(BitmapOr *node, EState *estate)
+ExecInitBitmapOr(BitmapOr *node, EState *estate, int eflags)
 {
 	BitmapOrState *bitmaporstate = makeNode(BitmapOrState);
 	PlanState **bitmapplanstates;
@@ -49,6 +49,10 @@ ExecInitBitmapOr(BitmapOr *node, EState *estate)
 	int			i;
 	ListCell   *l;
 	Plan	   *initNode;
+	bool		inmem = false;
+
+	/* check for unsupported flags */
+	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
 
 	CXT1_printf("ExecInitBitmapOr: context is %d\n", CurrentMemoryContext);
 
@@ -84,9 +88,24 @@ ExecInitBitmapOr(BitmapOr *node, EState *estate)
 	foreach(l, node->bitmapplans)
 	{
 		initNode = (Plan *) lfirst(l);
-		bitmapplanstates[i] = ExecInitNode(initNode, estate);
+		bitmapplanstates[i] = ExecInitNode(initNode, estate, eflags);
+		if (!inmem && IsA(initNode, BitmapIndexScan))
+			inmem = (((BitmapIndexScan*)initNode)->indexam != 
+					 BITMAP_AM_OID);
+		else if (!inmem && IsA(initNode, BitmapAnd))
+			inmem = ((BitmapAnd*)initNode)->inmem;
+		else if (!inmem && IsA(initNode, BitmapOr))
+			inmem = ((BitmapOr*)initNode)->inmem;
 		i++;
 	}
+
+	node->inmem = inmem;
+
+	bitmaporstate->odbms = (OnDiskBitmapWords**)
+		palloc0(nplans * sizeof(OnDiskBitmapWords*));
+	for (i=0; i<nplans; i++)
+		bitmaporstate->odbms[i] = odbm_create(ODBM_MAX_WORDS);
+	bitmaporstate->resultOdbm = NULL;
 
 	return bitmaporstate;
 }
@@ -112,7 +131,8 @@ MultiExecBitmapOr(BitmapOrState *node)
 	PlanState **bitmapplans;
 	int			nplans;
 	int			i;
-	TIDBitmap  *result = NULL;
+	Node		*result = NULL;
+	bool		inmem = ((BitmapOr*)(((PlanState*)node)->plan))->inmem;
 
 	/* must provide our own instrumentation support */
 	if (node->ps.instrument)
@@ -130,44 +150,101 @@ MultiExecBitmapOr(BitmapOrState *node)
 	for (i = 0; i < nplans; i++)
 	{
 		PlanState  *subnode = bitmapplans[i];
-		TIDBitmap  *subresult;
 
-		/*
-		 * We can special-case BitmapIndexScan children to avoid an explicit
-		 * tbm_union step for each child: just pass down the current result
-		 * bitmap and let the child OR directly into it.
-		 */
-		if (IsA(subnode, BitmapIndexScanState))
-		{
-			if (result == NULL) /* first subplan */
+		/* set the required bitmap type for the subnodes */
+		odbm_set_bitmaptype(subnode->plan, inmem);
+
+		if (inmem) {
+			TIDBitmap  *subresult;
+
+			/*
+			 * We can special-case BitmapIndexScan children to avoid an
+			 * explicit tbm_union step for each child: just pass down the
+		 	* current result bitmap and let the child OR directly into it.
+		 	*/
+			if (IsA(subnode, BitmapIndexScanState))
 			{
-				/* XXX should we use less than work_mem for this? */
-				result = tbm_create(work_mem * 1024L);
+				if (result == NULL)				/* first subplan */
+				{
+					/* XXX should we use less than work_mem for this? */
+					result = (Node*)tbm_create(work_mem * 1024L);
+				}
+
+				((BitmapIndexScanState *) subnode)->biss_result = 
+					(TIDBitmap*)result;
+
+				subresult = (TIDBitmap *) MultiExecProcNode(subnode);
+
+				if (subresult != (TIDBitmap*)result)
+					elog(ERROR, "unrecognized result from subplan");
 			}
-
-			((BitmapIndexScanState *) subnode)->biss_result = result;
-
-			subresult = (TIDBitmap *) MultiExecProcNode(subnode);
-
-			if (subresult != result)
-				elog(ERROR, "unrecognized result from subplan");
-		}
-		else
-		{
-			/* standard implementation */
-			subresult = (TIDBitmap *) MultiExecProcNode(subnode);
-
-			if (!subresult || !IsA(subresult, TIDBitmap))
-				elog(ERROR, "unrecognized result from subplan");
-
-			if (result == NULL)
-				result = subresult;		/* first subplan */
 			else
 			{
-				tbm_union(result, subresult);
-				tbm_free(subresult);
+
+				/* standard implementation */
+				subresult = (TIDBitmap *) MultiExecProcNode(subnode);
+
+				if (!subresult || !IsA(subresult, TIDBitmap))
+					elog(ERROR, "unrecognized result from subplan");
+
+				if (result == NULL)
+					result = (Node*)subresult;			/* first subplan */
+				else
+				{
+					tbm_union((TIDBitmap*)result, subresult);
+					tbm_free(subresult);
+				}
 			}
 		}
+
+		else
+		{
+			OnDiskBitmapWords  *subresult;
+
+			/* if there is no leftover from previous scan, then
+				read the next list of words. */
+			if (node->odbms[i]->numOfWords == 0)
+			{
+				node->odbms[i]->startNo = 0;
+				odbm_set_child_resultnode(subnode, node->odbms[i]);
+
+				subresult = (OnDiskBitmapWords*) MultiExecProcNode(subnode);
+
+				if (!subresult || !IsA(subresult, OnDiskBitmapWords))
+					elog(ERROR, "unrecognized result from subplan");
+
+				node->odbms[i] = subresult;
+			}
+		}
+	}
+
+	if (!inmem)
+	{
+		if (node->resultOdbm == NULL)
+			node->resultOdbm = odbm_create(ODBM_MAX_WORDS);
+		odbm_reset(node->resultOdbm);
+		odbm_union(node->odbms, nplans, node->resultOdbm);
+
+		/* if the number of words in the result is 0, then
+			at least one of subplans contains no words. We
+			want to discard these subplans, and re-calculate
+			the result. */
+		if (node->resultOdbm->numOfWords == 0)
+		{
+			OnDiskBitmapWords** odbms =
+				palloc0(sizeof(OnDiskBitmapWords*)*nplans);
+			uint32	nonempty_nplans = 0;
+
+			for (i=0; i<nplans; i++)
+				if (node->odbms[i]->numOfWords != 0)
+					odbms[nonempty_nplans++] = node->odbms[i];
+
+			odbm_reset(node->resultOdbm);
+			odbm_union(odbms, nonempty_nplans, node->resultOdbm);
+			pfree(odbms);
+		}
+
+		result = (Node*)(node->resultOdbm);
 	}
 
 	/* We could return an empty result set here? */
@@ -176,7 +253,7 @@ MultiExecBitmapOr(BitmapOrState *node)
 
 	/* must provide our own instrumentation support */
 	if (node->ps.instrument)
-		InstrStopNodeMulti(node->ps.instrument, 0 /* XXX */ );
+		InstrStopNodeMulti(node->ps.instrument, 0 /* XXX */);
 
 	return (Node *) result;
 }
@@ -210,6 +287,14 @@ ExecEndBitmapOr(BitmapOrState *node)
 		if (bitmapplans[i])
 			ExecEndNode(bitmapplans[i]);
 	}
+
+	if (node->odbms != NULL)
+	{
+		for (i=0; i<nplans; i++)
+			if (node->odbms[i] != NULL)
+				odbm_free(node->odbms[i]);
+		pfree(node->odbms);
+	}
 }
 
 void
@@ -228,10 +313,17 @@ ExecReScanBitmapOr(BitmapOrState *node, ExprContext *exprCtxt)
 		if (node->ps.chgParam != NULL)
 			UpdateChangedParamSet(subnode, node->ps.chgParam);
 
+		if (node->odbms[i] != NULL)
+		{
+			node->odbms[i]->startNo = 0;
+			node->odbms[i]->numOfWords = 0;
+		}
+
 		/*
 		 * Always rescan the inputs immediately, to ensure we can pass down
 		 * any outer tuple that might be used in index quals.
 		 */
 		ExecReScan(subnode, exprCtxt);
 	}
+
 }

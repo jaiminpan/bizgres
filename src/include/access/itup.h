@@ -56,8 +56,13 @@ typedef struct IndexAttributeBitMapData
 {
 	bits8		bits[(INDEX_MAX_KEYS + 8 - 1) / 8];
 } IndexAttributeBitMapData;
-
 typedef IndexAttributeBitMapData *IndexAttributeBitMap;
+
+typedef struct InsertIndexResultData
+{
+  ItemPointerData pointerData;
+} InsertIndexResultData;
+typedef InsertIndexResultData *InsertIndexResult;
 
 /*
  * t_info manipulation macros

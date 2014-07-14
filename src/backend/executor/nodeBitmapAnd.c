@@ -32,7 +32,6 @@
 #include "executor/instrument.h"
 #include "executor/nodeBitmapAnd.h"
 
-
 /* ----------------------------------------------------------------
  *		ExecInitBitmapAnd
  *
@@ -40,7 +39,7 @@
  * ----------------------------------------------------------------
  */
 BitmapAndState *
-ExecInitBitmapAnd(BitmapAnd *node, EState *estate)
+ExecInitBitmapAnd(BitmapAnd *node, EState *estate, int eflags)
 {
 	BitmapAndState *bitmapandstate = makeNode(BitmapAndState);
 	PlanState **bitmapplanstates;
@@ -48,6 +47,10 @@ ExecInitBitmapAnd(BitmapAnd *node, EState *estate)
 	int			i;
 	ListCell   *l;
 	Plan	   *initNode;
+	bool		inmem = false;
+
+	/* check for unsupported flags */
+	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
 
 	CXT1_printf("ExecInitBitmapAnd: context is %d\n", CurrentMemoryContext);
 
@@ -83,9 +86,25 @@ ExecInitBitmapAnd(BitmapAnd *node, EState *estate)
 	foreach(l, node->bitmapplans)
 	{
 		initNode = (Plan *) lfirst(l);
-		bitmapplanstates[i] = ExecInitNode(initNode, estate);
+    bitmapplanstates[i] = ExecInitNode(initNode, estate, eflags);
+
+		if (!inmem && IsA(initNode, BitmapIndexScan))
+			inmem = (((BitmapIndexScan*)initNode)->indexam != 
+					 BITMAP_AM_OID);
+		else if (!inmem && IsA(initNode, BitmapAnd))
+			inmem = ((BitmapAnd*)initNode)->inmem;
+		else if (!inmem && IsA(initNode, BitmapOr))
+			inmem = ((BitmapOr*)initNode)->inmem;
 		i++;
 	}
+
+	node->inmem = inmem;
+
+	bitmapandstate->odbms = (OnDiskBitmapWords**)
+		palloc0(nplans * sizeof(OnDiskBitmapWords*));
+	for (i=0; i<nplans; i++)
+		bitmapandstate->odbms[i] = odbm_create(ODBM_MAX_WORDS);
+	bitmapandstate->resultOdbm = NULL;
 
 	return bitmapandstate;
 }
@@ -111,7 +130,8 @@ MultiExecBitmapAnd(BitmapAndState *node)
 	PlanState **bitmapplans;
 	int			nplans;
 	int			i;
-	TIDBitmap  *result = NULL;
+	Node		*result = NULL;
+	bool		inmem = ((BitmapAnd*)(((PlanState*)node)->plan))->inmem;
 
 	/* must provide our own instrumentation support */
 	if (node->ps.instrument)
@@ -123,36 +143,63 @@ MultiExecBitmapAnd(BitmapAndState *node)
 	bitmapplans = node->bitmapplans;
 	nplans = node->nplans;
 
+
 	/*
 	 * Scan all the subplans and AND their result bitmaps
-	 */
+ 	*/
 	for (i = 0; i < nplans; i++)
 	{
-		PlanState  *subnode = bitmapplans[i];
-		TIDBitmap  *subresult;
+		PlanState	*subnode = bitmapplans[i];
 
-		subresult = (TIDBitmap *) MultiExecProcNode(subnode);
+		/* set the required bitmap type for the subnodes */
+		odbm_set_bitmaptype(subnode->plan, inmem);
 
-		if (!subresult || !IsA(subresult, TIDBitmap))
-			elog(ERROR, "unrecognized result from subplan");
-
-		if (result == NULL)
-			result = subresult; /* first subplan */
-		else
+		if (inmem) 
 		{
-			tbm_intersect(result, subresult);
-			tbm_free(subresult);
+			TIDBitmap *subresult;
+
+			subresult = (TIDBitmap *) MultiExecProcNode(subnode);
+
+			if (!subresult || !IsA(subresult, TIDBitmap))
+				elog(ERROR, "unrecognized result from subplan");
+
+			if (result == NULL)
+				result = (Node*)subresult;			/* first subplan */
+			else
+			{
+				tbm_intersect((TIDBitmap*)result, subresult);
+				tbm_free(subresult);
+			}
 		}
 
-		/*
-		 * If at any stage we have a completely empty bitmap, we can fall out
-		 * without evaluating the remaining subplans, since ANDing them can no
-		 * longer change the result.  (Note: the fact that indxpath.c orders
-		 * the subplans by selectivity should make this case more likely to
-		 * occur.)
-		 */
-		if (tbm_is_empty(result))
-			break;
+		else
+		{
+			OnDiskBitmapWords* subresult;
+
+			/* if there is no leftover from previous scan, then
+				read next list of words. */
+			if ((node->odbms[i])->numOfWords == 0)
+			{
+				node->odbms[i]->startNo = 0;
+				odbm_set_child_resultnode(subnode, node->odbms[i]);
+
+				subresult = (OnDiskBitmapWords*)MultiExecProcNode(subnode);
+
+				if (!subresult || !IsA(subresult, OnDiskBitmapWords))
+					elog(ERROR, "unrecognized result from subplan");
+
+				node->odbms[i] = subresult;
+			}
+		}
+	}
+
+	if (!inmem)
+	{
+		if (node->resultOdbm == NULL)
+			node->resultOdbm = odbm_create(ODBM_MAX_WORDS);
+		odbm_reset(node->resultOdbm);
+		odbm_intersect(node->odbms, nplans, node->resultOdbm);
+		result = (Node*)(node->resultOdbm);
 	}
 
 	if (result == NULL)
@@ -160,7 +207,7 @@ MultiExecBitmapAnd(BitmapAndState *node)
 
 	/* must provide our own instrumentation support */
 	if (node->ps.instrument)
-		InstrStopNodeMulti(node->ps.instrument, 0 /* XXX */ );
+		InstrStopNodeMulti(node->ps.instrument, 0 /* XXX */);
 
 	return (Node *) result;
 }
@@ -194,6 +241,14 @@ ExecEndBitmapAnd(BitmapAndState *node)
 		if (bitmapplans[i])
 			ExecEndNode(bitmapplans[i]);
 	}
+
+	if (node->odbms != NULL)
+	{
+		for (i=0; i<nplans; i++)
+			if (node->odbms[i] != NULL)
+				odbm_free(node->odbms[i]);
+		pfree(node->odbms);
+	}
 }
 
 void
@@ -211,6 +266,12 @@ ExecReScanBitmapAnd(BitmapAndState *node, ExprContext *exprCtxt)
 		 */
 		if (node->ps.chgParam != NULL)
 			UpdateChangedParamSet(subnode, node->ps.chgParam);
+
+		if (node->odbms[i] != NULL)
+		{
+			node->odbms[i]->startNo = 0;
+			node->odbms[i]->numOfWords = 0;
+		}
 
 		/*
 		 * Always rescan the inputs immediately, to ensure we can pass down

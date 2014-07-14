@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 1.875.  */
+/* A Bison parser, made by GNU Bison 1.875c.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1245,7 +1245,7 @@ typedef union YYSTYPE {
 	struct  su_symbol	struct_union;
 } YYSTYPE;
 /* Line 191 of yacc.c.  */
-#line 1248 "y.tab.c"
+#line 1249 "y.tab.c"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1
@@ -1257,22 +1257,22 @@ typedef union YYSTYPE {
 
 
 /* Line 214 of yacc.c.  */
-#line 1260 "y.tab.c"
+#line 1261 "y.tab.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
-# if YYSTACK_USE_ALLOCA
-#  define YYSTACK_ALLOC alloca
+# ifdef YYSTACK_USE_ALLOCA
+#  if YYSTACK_USE_ALLOCA
+#   define YYSTACK_ALLOC alloca
+#  endif
 # else
-#  ifndef YYSTACK_USE_ALLOCA
-#   if defined (alloca) || defined (_ALLOCA_H)
-#    define YYSTACK_ALLOC alloca
-#   else
-#    ifdef __GNUC__
-#     define YYSTACK_ALLOC __builtin_alloca
-#    endif
+#  if defined (alloca) || defined (_ALLOCA_H)
+#   define YYSTACK_ALLOC alloca
+#  else
+#   ifdef __GNUC__
+#    define YYSTACK_ALLOC __builtin_alloca
 #   endif
 #  endif
 # endif
@@ -1293,7 +1293,7 @@ typedef union YYSTYPE {
 
 #if (! defined (yyoverflow) \
      && (! defined (__cplusplus) \
-	 || (YYSTYPE_IS_TRIVIAL)))
+	 || (defined (YYSTYPE_IS_TRIVIAL) && YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
@@ -1314,7 +1314,7 @@ union yyalloc
 /* Copy COUNT objects from FROM to TO.  The source and destination do
    not overlap.  */
 # ifndef YYCOPY
-#  if 1 < __GNUC__
+#  if defined (__GNUC__) && 1 < __GNUC__
 #   define YYCOPY(To, From, Count) \
       __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
 #  else
@@ -2486,213 +2486,208 @@ static const unsigned short yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "SQL_ALLOCATE", "SQL_AUTOCOMMIT", 
-  "SQL_BOOL", "SQL_BREAK", "SQL_CALL", "SQL_CARDINALITY", "SQL_CONNECT", 
-  "SQL_CONTINUE", "SQL_COUNT", "SQL_CURRENT", "SQL_DATA", 
-  "SQL_DATETIME_INTERVAL_CODE", "SQL_DATETIME_INTERVAL_PRECISION", 
-  "SQL_DESCRIBE", "SQL_DESCRIPTOR", "SQL_DISCONNECT", "SQL_ENUM", 
-  "SQL_FOUND", "SQL_FREE", "SQL_GO", "SQL_GOTO", "SQL_IDENTIFIED", 
-  "SQL_INDICATOR", "SQL_KEY_MEMBER", "SQL_LENGTH", "SQL_LONG", "SQL_NAME", 
-  "SQL_NULLABLE", "SQL_OCTET_LENGTH", "SQL_OPEN", "SQL_OUTPUT", 
-  "SQL_REFERENCE", "SQL_RETURNED_LENGTH", "SQL_RETURNED_OCTET_LENGTH", 
-  "SQL_SCALE", "SQL_SECTION", "SQL_SHORT", "SQL_SIGNED", "SQL_SQL", 
-  "SQL_SQLERROR", "SQL_SQLPRINT", "SQL_SQLWARNING", "SQL_START", 
-  "SQL_STOP", "SQL_STRUCT", "SQL_UNSIGNED", "SQL_VALUE", "SQL_VAR", 
-  "SQL_WHENEVER", "S_ADD", "S_AND", "S_ANYTHING", "S_AUTO", "S_CONST", 
-  "S_DEC", "S_DIV", "S_DOTPOINT", "S_EQUAL", "S_EXTERN", "S_INC", 
-  "S_LSHIFT", "S_MEMPOINT", "S_MEMBER", "S_MOD", "S_MUL", "S_NEQUAL", 
-  "S_OR", "S_REGISTER", "S_RSHIFT", "S_STATIC", "S_SUB", "S_VOLATILE", 
-  "S_TYPEDEF", "TYPECAST", "ABORT_P", "ABSOLUTE_P", "ACCESS", "ACTION", 
-  "ADD", "ADMIN", "AFTER", "AGGREGATE", "ALL", "ALSO", "ALTER", "ANALYSE", 
-  "ANALYZE", "AND", "ANY", "ARRAY", "AS", "ASC", "ASSERTION", 
-  "ASSIGNMENT", "ASYMMETRIC", "AT", "AUTHORIZATION", "BACKWARD", "BEFORE", 
-  "BEGIN_P", "BETWEEN", "BIGINT", "BINARY", "BIT", "BOOLEAN_P", "BOTH", 
-  "BY", "CACHE", "CALLED", "CASCADE", "CASE", "CAST", "CHAIN", "CHAR_P", 
-  "CHARACTER", "CHARACTERISTICS", "CHECK", "CHECKPOINT", "CLASS", "CLOSE", 
-  "CLUSTER", "COALESCE", "COLLATE", "COLUMN", "COMMENT", "COMMIT", 
-  "COMMITTED", "CONNECTION", "CONSTRAINT", "CONSTRAINTS", "CONVERSION_P", 
-  "CONVERT", "COPY", "CREATE", "CREATEDB", "CREATEROLE", "CREATEUSER", 
-  "CROSS", "CSV", "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_TIME", 
-  "CURRENT_TIMESTAMP", "CURRENT_USER", "CURSOR", "CYCLE", "DATABASE", 
-  "DAY_P", "DEALLOCATE", "DEC", "DECIMAL_P", "DECLARE", "DEFAULT", 
-  "DEFAULTS", "DEFERRABLE", "DEFERRED", "DEFINER", "DELETE_P", 
-  "DELIMITER", "DELIMITERS", "DESC", "DISABLE_P", "DISTINCT", "DO", 
-  "DOMAIN_P", "DOUBLE_P", "DROP", "EACH", "ELSE", "ENABLE_P", "ENCODING", 
-  "ENCRYPTED", "END_P", "ESCAPE", "EXCEPT", "EXCLUSIVE", "EXCLUDING", 
-  "EXECUTE", "EXISTS", "EXPLAIN", "EXTERNAL", "EXTRACT", "FALSE_P", 
-  "FETCH", "FIRST_P", "FLOAT_P", "FOR", "FORCE", "FOREIGN", "FORWARD", 
-  "FREEZE", "FROM", "FULL", "FUNCTION", "GET", "GLOBAL", "GRANT", 
-  "GRANTED", "GREATEST", "GROUP_P", "HANDLER", "HAVING", "HEADER", "HOLD", 
-  "HOUR_P", "ILIKE", "IMMEDIATE", "IMMUTABLE", "IMPLICIT_P", "IN_P", 
-  "INCLUDING", "INCREMENT", "INDEX", "INHERIT", "INHERITS", "INITIALLY", 
-  "INNER_P", "INOUT", "INPUT_P", "INSENSITIVE", "INSERT", "INSTEAD", 
-  "INT_P", "INTEGER", "INTERSECT", "INTERVAL", "INTO", "INVOKER", "IS", 
-  "ISNULL", "ISOLATION", "JOIN", "KEY", "LANCOMPILER", "LANGUAGE", 
-  "LARGE_P", "LAST_P", "LEADING", "LEAST", "LEFT", "LEVEL", "LIKE", 
-  "LIMIT", "LISTEN", "LOAD", "LOCAL", "LOCALTIME", "LOCALTIMESTAMP", 
-  "LOCATION", "LOCK_P", "LOGIN_P", "MATCH", "MAXVALUE", "MINUTE_P", 
-  "MINVALUE", "MODE", "MONTH_P", "MOVE", "NAMES", "NATIONAL", "NATURAL", 
-  "NCHAR", "NEW", "NEXT", "NO", "NOCREATEDB", "NOCREATEROLE", 
-  "NOCREATEUSER", "NOINHERIT", "NOLOGIN_P", "NONE", "NOSUPERUSER", "NOT", 
-  "NOTHING", "NOTIFY", "NOTNULL", "NOWAIT", "NULL_P", "NULLIF", "NUMERIC", 
-  "OBJECT_P", "OF", "OFF", "OFFSET", "OIDS", "OLD", "ON", "ONLY", 
-  "OPERATOR", "OPTION", "OR", "ORDER", "OUT_P", "OUTER_P", "OVERLAPS", 
-  "OVERLAY", "OWNER", "PARTIAL", "PASSWORD", "PLACING", "POSITION", 
-  "PRECISION", "PRESERVE", "PREPARE", "PREPARED", "PRIMARY", "PRIOR", 
-  "PRIVILEGES", "PROCEDURAL", "PROCEDURE", "QUOTE", "READ", "REAL", 
-  "RECHECK", "REFERENCES", "REINDEX", "RELATIVE_P", "RELEASE", "RENAME", 
-  "REPEATABLE", "REPLACE", "RESET", "RESTART", "RESTRICT", "RETURNS", 
-  "REVOKE", "RIGHT", "ROLE", "ROLLBACK", "ROW", "ROWS", "RULE", 
-  "SAVEPOINT", "SCHEMA", "SCROLL", "SECOND_P", "SECURITY", "SELECT", 
-  "SEQUENCE", "SERIALIZABLE", "SESSION", "SESSION_USER", "SET", "SETOF", 
-  "SHARE", "SHOW", "SIMILAR", "SIMPLE", "SMALLINT", "SOME", "STABLE", 
-  "START", "STATEMENT", "STATISTICS", "STDIN", "STDOUT", "STORAGE", 
-  "STRICT_P", "SUBSTRING", "SUPERUSER_P", "SYMMETRIC", "SYSID", 
-  "SYSTEM_P", "TABLE", "TABLESPACE", "TEMP", "TEMPLATE", "TEMPORARY", 
-  "THEN", "TIME", "TIMESTAMP", "TO", "TOAST", "TRAILING", "TRANSACTION", 
-  "TREAT", "TRIGGER", "TRIM", "TRUE_P", "TRUNCATE", "TRUSTED", "TYPE_P", 
-  "UNCOMMITTED", "UNENCRYPTED", "UNION", "UNIQUE", "UNKNOWN", "UNLISTEN", 
-  "UNTIL", "UPDATE", "USER", "USING", "VACUUM", "VALID", "VALIDATOR", 
-  "VALUES", "VARCHAR", "VARYING", "VERBOSE", "VIEW", "VOLATILE", "WHEN", 
-  "WHERE", "WITH", "WITHOUT", "WORK", "WRITE", "YEAR_P", "ZONE", 
-  "UNIONJOIN", "IDENT", "SCONST", "Op", "CSTRING", "CVARIABLE", 
-  "CPP_LINE", "IP", "BCONST", "XCONST", "ICONST", "PARAM", "FCONST", 
-  "'='", "'<'", "'>'", "POSTFIXOP", "'+'", "'-'", "'*'", "'/'", "'%'", 
-  "'^'", "UMINUS", "'['", "']'", "'('", "')'", "'.'", "';'", "'{'", "'}'", 
-  "\"=\"", "','", "':'", "$accept", "prog", "statements", "statement", 
-  "opt_at", "stmt", "CreateRoleStmt", "opt_with", "OptRoleList", 
-  "CreateUserStmt", "AlterRoleStmt", "AlterRoleSetStmt", "AlterUserStmt", 
-  "DropRoleStmt", "DropUserStmt", "CreateGroupStmt", "AlterGroupStmt", 
-  "add_drop", "DropGroupStmt", "CreateSchemaStmt", "OptSchemaName", 
-  "OptSchemaEltList", "schema_stmt", "VariableSetStmt", "set_rest", 
-  "var_name", "var_list_or_default", "var_list", "iso_level", "var_value", 
-  "opt_boolean", "zone_value", "opt_encoding", "ColId_or_Sconst", 
-  "VariableShowStmt", "VariableResetStmt", "ConstraintsSetStmt", 
-  "constraints_set_list", "constraints_set_mode", "CheckPointStmt", 
-  "AlterTableStmt", "alter_table_cmds", "alter_table_cmd", 
-  "alter_rel_cmds", "alter_rel_cmd", "alter_column_default", 
-  "opt_drop_behavior", "alter_using", "ClosePortalStmt", "CopyStmt", 
-  "copy_from", "copy_file_name", "copy_opt_list", "copy_opt_item", 
-  "opt_binary", "opt_oids", "copy_delimiter", "opt_using", "CreateStmt", 
-  "OptTemp", "OptTableElementList", "TableElementList", "TableElement", 
-  "columnDef", "ColQualList", "ColConstraint", "ColConstraintElem", 
-  "ConstraintAttr", "TableLikeClause", "like_including_defaults", 
-  "TableConstraint", "ConstraintElem", "opt_column_list", "columnList", 
-  "columnElem", "key_match", "key_actions", "key_delete", "key_update", 
-  "key_action", "OptInherit", "OptWithOids", "OnCommitOption", 
-  "OptTableSpace", "OptConsTableSpace", "CreateAsStmt", "@1", 
-  "WithOidsAs", "OptCreateAs", "CreateAsList", "CreateAsElement", 
-  "CreateSeqStmt", "AlterSeqStmt", "OptSeqList", "OptSeqElem", "opt_by", 
-  "CreatePLangStmt", "opt_trusted", "handler_name", "opt_validator", 
-  "opt_lancompiler", "DropPLangStmt", "opt_procedural", 
-  "CreateTableSpaceStmt", "OptTableSpaceOwner", "DropTableSpaceStmt", 
-  "CreateTrigStmt", "TriggerActionTime", "TriggerEvents", 
-  "TriggerOneEvent", "TriggerForSpec", "TriggerForOpt", "TriggerForType", 
-  "TriggerFuncArgs", "TriggerFuncArg", "OptConstrFromTable", 
-  "ConstraintAttributeSpec", "ConstraintDeferrabilitySpec", 
-  "ConstraintTimeSpec", "DropTrigStmt", "CreateAssertStmt", 
-  "DropAssertStmt", "DefineStmt", "rowdefinition", "definition", 
-  "def_list", "def_elem", "def_arg", "CreateOpClassStmt", 
-  "opclass_item_list", "opclass_item", "opt_default", "opt_recheck", 
-  "DropOpClassStmt", "DropStmt", "drop_type", "any_name_list", "any_name", 
-  "attrs", "TruncateStmt", "FetchStmt", "fetch_direction", "from_in", 
-  "CommentStmt", "comment_type", "comment_text", "GrantStmt", 
-  "RevokeStmt", "privileges", "privilege_list", "privilege", 
-  "privilege_target", "grantee_list", "grantee", "opt_grant_grant_option", 
-  "function_with_argtypes_list", "function_with_argtypes", 
-  "GrantRoleStmt", "RevokeRoleStmt", "opt_grant_admin_option", 
-  "opt_granted_by", "IndexStmt", "index_opt_unique", 
-  "access_method_clause", "index_params", "index_elem", "opt_class", 
-  "CreateFunctionStmt", "opt_or_replace", "func_args", "func_args_list", 
-  "func_arg", "arg_class", "func_as", "param_name", "func_return", 
-  "func_type", "createfunc_opt_list", "common_func_opt_item", 
-  "createfunc_opt_item", "opt_definition", "AlterFunctionStmt", 
-  "alterfunc_opt_list", "opt_restrict", "RemoveFuncStmt", 
-  "RemoveAggrStmt", "aggr_argtype", "RemoveOperStmt", "oper_argtypes", 
-  "any_operator", "CreateCastStmt", "cast_context", "DropCastStmt", 
-  "ReindexStmt", "reindex_type", "opt_force", "RenameStmt", "opt_column", 
-  "AlterObjectSchemaStmt", "AlterOwnerStmt", "RuleStmt", "@2", 
-  "RuleActionList", "RuleActionMulti", "RuleActionStmt", 
-  "RuleActionStmtOrEmpty", "event", "opt_instead", "DropRuleStmt", 
-  "NotifyStmt", "ListenStmt", "UnlistenStmt", "TransactionStmt", 
-  "opt_transaction", "transaction_mode_item", "transaction_mode_list", 
-  "transaction_mode_list_or_empty", "ViewStmt", "LoadStmt", 
-  "CreatedbStmt", "createdb_opt_list", "createdb_opt_item", "opt_equal", 
-  "AlterDatabaseStmt", "AlterDatabaseSetStmt", "alterdb_opt_list", 
-  "alterdb_opt_item", "DropdbStmt", "CreateDomainStmt", "AlterDomainStmt", 
-  "opt_as", "CreateConversionStmt", "ClusterStmt", "VacuumStmt", 
-  "AnalyzeStmt", "analyze_keyword", "opt_verbose", "opt_full", 
-  "opt_freeze", "opt_name_list", "ExplainStmt", "ExplainableStmt", 
-  "opt_analyze", "InsertStmt", "insert_rest", "insert_column_list", 
-  "insert_column_item", "DeleteStmt", "using_clause", "LockStmt", 
-  "opt_lock", "lock_type", "opt_nowait", "UpdateStmt", 
-  "DeclareCursorStmt", "cursor_options", "opt_hold", "SelectStmt", 
-  "select_with_parens", "select_no_parens", "select_clause", 
-  "simple_select", "into_clause", "OptTempTableName", "opt_table", 
-  "opt_all", "opt_distinct", "opt_sort_clause", "sort_clause", 
-  "sortby_list", "sortby", "select_limit", "opt_select_limit", 
-  "select_limit_value", "select_offset_value", "group_clause", 
-  "having_clause", "for_locking_clause", "opt_for_locking_clause", 
-  "locked_rels_list", "from_clause", "from_list", "table_ref", 
-  "joined_table", "alias_clause", "join_type", "join_outer", "join_qual", 
-  "relation_expr", "func_table", "where_clause", "TableFuncElementList", 
-  "TableFuncElement", "Typename", "opt_array_bounds", "Iresult", 
-  "SimpleTypename", "ConstTypename", "GenericType", "Numeric", 
-  "opt_float", "opt_numeric", "opt_decimal", "Bit", "ConstBit", 
-  "BitWithLength", "BitWithoutLength", "Character", "ConstCharacter", 
-  "CharacterWithLength", "CharacterWithoutLength", "character", 
-  "opt_varying", "opt_charset", "ConstDatetime", "ConstInterval", 
-  "opt_timezone", "opt_interval", "a_expr", "b_expr", "c_expr", 
-  "func_expr", "row", "sub_type", "all_Op", "MathOp", "qual_Op", 
-  "qual_all_Op", "subquery_Op", "expr_list", "extract_list", "type_list", 
-  "array_expr_list", "array_expr", "extract_arg", "overlay_list", 
-  "overlay_placing", "position_list", "substr_list", "substr_from", 
-  "substr_for", "trim_list", "in_expr", "case_expr", "when_clause_list", 
-  "when_clause", "case_default", "case_arg", "columnref", 
-  "indirection_el", "indirection", "opt_indirection", "opt_asymmetric", 
-  "target_list", "target_el", "update_target_list", "inf_col_list", 
-  "inf_val_list", "update_target_el", "insert_target_list", 
-  "insert_target_el", "relation_name", "qualified_name_list", 
-  "qualified_name", "name_list", "name", "database_name", "access_method", 
-  "attr_name", "index_name", "file_name", "func_name", "AexprConst", 
-  "Iconst", "Fconst", "Bconst", "Xconst", "Sconst", "PosIntConst", 
-  "IntConst", "IntConstVar", "AllConstVar", "StringConst", 
-  "PosIntStringConst", "NumConst", "AllConst", "PosAllConst", "RoleId", 
-  "SpecialRuleRelation", "ECPGConnect", "connection_target", "db_prefix", 
-  "server", "opt_server", "server_name", "opt_port", 
-  "opt_connection_name", "opt_user", "ora_user", "user_name", 
-  "char_variable", "opt_options", "ECPGCursorStmt", "ECPGDeallocate", 
-  "ECPGVarDeclaration", "single_vt_declaration", "single_var_declaration", 
-  "@3", "@4", "precision", "opt_scale", "ecpg_interval", 
-  "ECPGDeclaration", "@5", "sql_startdeclare", "sql_enddeclare", 
-  "var_type_declarations", "vt_declarations", "variable_declarations", 
-  "type_declaration", "@6", "var_declaration", "@7", "@8", 
-  "storage_declaration", "storage_clause", "storage_modifier", "var_type", 
-  "enum_type", "enum_definition", "struct_union_type_with_symbol", "@9", 
-  "struct_union_type", "@10", "s_struct_union_symbol", "s_struct_union", 
-  "simple_type", "unsigned_type", "signed_type", "opt_signed", 
-  "variable_list", "variable", "opt_initializer", "opt_pointer", 
-  "ECPGDeclare", "ECPGDisconnect", "dis_name", "connection_object", 
-  "ECPGExecute", "@11", "execute_rest", "execstring", "prepared_name", 
-  "ECPGFree", "ECPGOpen", "opt_ecpg_using", "ecpg_using", 
-  "using_descriptor", "into_descriptor", "opt_sql", "ecpg_into", 
-  "using_list", "UsingConst", "ECPGPrepare", "ECPGDescribe", "opt_output", 
-  "ECPGAllocateDescr", "ECPGDeallocateDescr", "ECPGGetDescriptorHeader", 
-  "ECPGGetDescHeaderItems", "ECPGGetDescHeaderItem", 
-  "ECPGSetDescriptorHeader", "ECPGSetDescHeaderItems", 
-  "ECPGSetDescHeaderItem", "desc_header_item", "ECPGGetDescriptor", 
-  "ECPGGetDescItems", "ECPGGetDescItem", "ECPGSetDescriptor", 
-  "ECPGSetDescItems", "ECPGSetDescItem", "descriptor_item", 
-  "ECPGSetAutocommit", "on_off", "ECPGSetConnection", "ECPGTypedef", 
-  "@12", "opt_reference", "ECPGVar", "@13", "ECPGWhenever", "action", 
-  "ECPGKeywords", "ECPGKeywords_vanames", "ECPGKeywords_rest", 
-  "ECPGTypeName", "symbol", "ECPGColId", "ColId", "type_name", 
-  "function_name", "ColLabel", "ECPGColLabelCommon", "ECPGColLabel", 
-  "ECPGCKeywords", "unreserved_keyword", "ECPGunreserved_interval", 
-  "ECPGunreserved", "ECPGunreserved_con", "col_name_keyword", 
-  "func_name_keyword", "reserved_keyword", "into_list", "ecpgstart", 
-  "c_args", "coutputvariable", "civarind", "civar", "indicator", 
-  "cvariable", "ident", "quoted_ident_stringvar", "c_stuff_item", 
+  "$end", "error", "$undefined", "SQL_ALLOCATE", "SQL_AUTOCOMMIT",
+  "SQL_BOOL", "SQL_BREAK", "SQL_CALL", "SQL_CARDINALITY", "SQL_CONNECT",
+  "SQL_CONTINUE", "SQL_COUNT", "SQL_CURRENT", "SQL_DATA",
+  "SQL_DATETIME_INTERVAL_CODE", "SQL_DATETIME_INTERVAL_PRECISION",
+  "SQL_DESCRIBE", "SQL_DESCRIPTOR", "SQL_DISCONNECT", "SQL_ENUM",
+  "SQL_FOUND", "SQL_FREE", "SQL_GO", "SQL_GOTO", "SQL_IDENTIFIED",
+  "SQL_INDICATOR", "SQL_KEY_MEMBER", "SQL_LENGTH", "SQL_LONG", "SQL_NAME",
+  "SQL_NULLABLE", "SQL_OCTET_LENGTH", "SQL_OPEN", "SQL_OUTPUT",
+  "SQL_REFERENCE", "SQL_RETURNED_LENGTH", "SQL_RETURNED_OCTET_LENGTH",
+  "SQL_SCALE", "SQL_SECTION", "SQL_SHORT", "SQL_SIGNED", "SQL_SQL",
+  "SQL_SQLERROR", "SQL_SQLPRINT", "SQL_SQLWARNING", "SQL_START",
+  "SQL_STOP", "SQL_STRUCT", "SQL_UNSIGNED", "SQL_VALUE", "SQL_VAR",
+  "SQL_WHENEVER", "S_ADD", "S_AND", "S_ANYTHING", "S_AUTO", "S_CONST",
+  "S_DEC", "S_DIV", "S_DOTPOINT", "S_EQUAL", "S_EXTERN", "S_INC",
+  "S_LSHIFT", "S_MEMPOINT", "S_MEMBER", "S_MOD", "S_MUL", "S_NEQUAL",
+  "S_OR", "S_REGISTER", "S_RSHIFT", "S_STATIC", "S_SUB", "S_VOLATILE",
+  "S_TYPEDEF", "TYPECAST", "ABORT_P", "ABSOLUTE_P", "ACCESS", "ACTION",
+  "ADD", "ADMIN", "AFTER", "AGGREGATE", "ALL", "ALSO", "ALTER", "ANALYSE",
+  "ANALYZE", "AND", "ANY", "ARRAY", "AS", "ASC", "ASSERTION", "ASSIGNMENT",
+  "ASYMMETRIC", "AT", "AUTHORIZATION", "BACKWARD", "BEFORE", "BEGIN_P",
+  "BETWEEN", "BIGINT", "BINARY", "BIT", "BOOLEAN_P", "BOTH", "BY", "CACHE",
+  "CALLED", "CASCADE", "CASE", "CAST", "CHAIN", "CHAR_P", "CHARACTER",
+  "CHARACTERISTICS", "CHECK", "CHECKPOINT", "CLASS", "CLOSE", "CLUSTER",
+  "COALESCE", "COLLATE", "COLUMN", "COMMENT", "COMMIT", "COMMITTED",
+  "CONNECTION", "CONSTRAINT", "CONSTRAINTS", "CONVERSION_P", "CONVERT",
+  "COPY", "CREATE", "CREATEDB", "CREATEROLE", "CREATEUSER", "CROSS", "CSV",
+  "CURRENT_DATE", "CURRENT_ROLE", "CURRENT_TIME", "CURRENT_TIMESTAMP",
+  "CURRENT_USER", "CURSOR", "CYCLE", "DATABASE", "DAY_P", "DEALLOCATE",
+  "DEC", "DECIMAL_P", "DECLARE", "DEFAULT", "DEFAULTS", "DEFERRABLE",
+  "DEFERRED", "DEFINER", "DELETE_P", "DELIMITER", "DELIMITERS", "DESC",
+  "DISABLE_P", "DISTINCT", "DO", "DOMAIN_P", "DOUBLE_P", "DROP", "EACH",
+  "ELSE", "ENABLE_P", "ENCODING", "ENCRYPTED", "END_P", "ESCAPE", "EXCEPT",
+  "EXCLUSIVE", "EXCLUDING", "EXECUTE", "EXISTS", "EXPLAIN", "EXTERNAL",
+  "EXTRACT", "FALSE_P", "FETCH", "FIRST_P", "FLOAT_P", "FOR", "FORCE",
+  "FOREIGN", "FORWARD", "FREEZE", "FROM", "FULL", "FUNCTION", "GET",
+  "GLOBAL", "GRANT", "GRANTED", "GREATEST", "GROUP_P", "HANDLER", "HAVING",
+  "HEADER", "HOLD", "HOUR_P", "ILIKE", "IMMEDIATE", "IMMUTABLE",
+  "IMPLICIT_P", "IN_P", "INCLUDING", "INCREMENT", "INDEX", "INHERIT",
+  "INHERITS", "INITIALLY", "INNER_P", "INOUT", "INPUT_P", "INSENSITIVE",
+  "INSERT", "INSTEAD", "INT_P", "INTEGER", "INTERSECT", "INTERVAL", "INTO",
+  "INVOKER", "IS", "ISNULL", "ISOLATION", "JOIN", "KEY", "LANCOMPILER",
+  "LANGUAGE", "LARGE_P", "LAST_P", "LEADING", "LEAST", "LEFT", "LEVEL",
+  "LIKE", "LIMIT", "LISTEN", "LOAD", "LOCAL", "LOCALTIME",
+  "LOCALTIMESTAMP", "LOCATION", "LOCK_P", "LOGIN_P", "MATCH", "MAXVALUE",
+  "MINUTE_P", "MINVALUE", "MODE", "MONTH_P", "MOVE", "NAMES", "NATIONAL",
+  "NATURAL", "NCHAR", "NEW", "NEXT", "NO", "NOCREATEDB", "NOCREATEROLE",
+  "NOCREATEUSER", "NOINHERIT", "NOLOGIN_P", "NONE", "NOSUPERUSER", "NOT",
+  "NOTHING", "NOTIFY", "NOTNULL", "NOWAIT", "NULL_P", "NULLIF", "NUMERIC",
+  "OBJECT_P", "OF", "OFF", "OFFSET", "OIDS", "OLD", "ON", "ONLY",
+  "OPERATOR", "OPTION", "OR", "ORDER", "OUT_P", "OUTER_P", "OVERLAPS",
+  "OVERLAY", "OWNER", "PARTIAL", "PASSWORD", "PLACING", "POSITION",
+  "PRECISION", "PRESERVE", "PREPARE", "PREPARED", "PRIMARY", "PRIOR",
+  "PRIVILEGES", "PROCEDURAL", "PROCEDURE", "QUOTE", "READ", "REAL",
+  "RECHECK", "REFERENCES", "REINDEX", "RELATIVE_P", "RELEASE", "RENAME",
+  "REPEATABLE", "REPLACE", "RESET", "RESTART", "RESTRICT", "RETURNS",
+  "REVOKE", "RIGHT", "ROLE", "ROLLBACK", "ROW", "ROWS", "RULE",
+  "SAVEPOINT", "SCHEMA", "SCROLL", "SECOND_P", "SECURITY", "SELECT",
+  "SEQUENCE", "SERIALIZABLE", "SESSION", "SESSION_USER", "SET", "SETOF",
+  "SHARE", "SHOW", "SIMILAR", "SIMPLE", "SMALLINT", "SOME", "STABLE",
+  "START", "STATEMENT", "STATISTICS", "STDIN", "STDOUT", "STORAGE",
+  "STRICT_P", "SUBSTRING", "SUPERUSER_P", "SYMMETRIC", "SYSID", "SYSTEM_P",
+  "TABLE", "TABLESPACE", "TEMP", "TEMPLATE", "TEMPORARY", "THEN", "TIME",
+  "TIMESTAMP", "TO", "TOAST", "TRAILING", "TRANSACTION", "TREAT",
+  "TRIGGER", "TRIM", "TRUE_P", "TRUNCATE", "TRUSTED", "TYPE_P",
+  "UNCOMMITTED", "UNENCRYPTED", "UNION", "UNIQUE", "UNKNOWN", "UNLISTEN",
+  "UNTIL", "UPDATE", "USER", "USING", "VACUUM", "VALID", "VALIDATOR",
+  "VALUES", "VARCHAR", "VARYING", "VERBOSE", "VIEW", "VOLATILE", "WHEN",
+  "WHERE", "WITH", "WITHOUT", "WORK", "WRITE", "YEAR_P", "ZONE",
+  "UNIONJOIN", "IDENT", "SCONST", "Op", "CSTRING", "CVARIABLE", "CPP_LINE",
+  "IP", "BCONST", "XCONST", "ICONST", "PARAM", "FCONST", "'='", "'<'",
+  "'>'", "POSTFIXOP", "'+'", "'-'", "'*'", "'/'", "'%'", "'^'", "UMINUS",
+  "'['", "']'", "'('", "')'", "'.'", "';'", "'{'", "'}'", "\"=\"", "','",
+  "':'", "$accept", "prog", "statements", "statement", "opt_at", "stmt",
+  "CreateRoleStmt", "opt_with", "OptRoleList", "CreateUserStmt",
+  "AlterRoleStmt", "AlterRoleSetStmt", "AlterUserStmt", "DropRoleStmt",
+  "DropUserStmt", "CreateGroupStmt", "AlterGroupStmt", "add_drop",
+  "DropGroupStmt", "CreateSchemaStmt", "OptSchemaName", "OptSchemaEltList",
+  "schema_stmt", "VariableSetStmt", "set_rest", "var_name",
+  "var_list_or_default", "var_list", "iso_level", "var_value",
+  "opt_boolean", "zone_value", "opt_encoding", "ColId_or_Sconst",
+  "VariableShowStmt", "VariableResetStmt", "ConstraintsSetStmt",
+  "constraints_set_list", "constraints_set_mode", "CheckPointStmt",
+  "AlterTableStmt", "alter_table_cmds", "alter_table_cmd",
+  "alter_rel_cmds", "alter_rel_cmd", "alter_column_default",
+  "opt_drop_behavior", "alter_using", "ClosePortalStmt", "CopyStmt",
+  "copy_from", "copy_file_name", "copy_opt_list", "copy_opt_item",
+  "opt_binary", "opt_oids", "copy_delimiter", "opt_using", "CreateStmt",
+  "OptTemp", "OptTableElementList", "TableElementList", "TableElement",
+  "columnDef", "ColQualList", "ColConstraint", "ColConstraintElem",
+  "ConstraintAttr", "TableLikeClause", "like_including_defaults",
+  "TableConstraint", "ConstraintElem", "opt_column_list", "columnList",
+  "columnElem", "key_match", "key_actions", "key_delete", "key_update",
+  "key_action", "OptInherit", "OptWithOids", "OnCommitOption",
+  "OptTableSpace", "OptConsTableSpace", "CreateAsStmt", "@1", "WithOidsAs",
+  "OptCreateAs", "CreateAsList", "CreateAsElement", "CreateSeqStmt",
+  "AlterSeqStmt", "OptSeqList", "OptSeqElem", "opt_by", "CreatePLangStmt",
+  "opt_trusted", "handler_name", "opt_validator", "opt_lancompiler",
+  "DropPLangStmt", "opt_procedural", "CreateTableSpaceStmt",
+  "OptTableSpaceOwner", "DropTableSpaceStmt", "CreateTrigStmt",
+  "TriggerActionTime", "TriggerEvents", "TriggerOneEvent",
+  "TriggerForSpec", "TriggerForOpt", "TriggerForType", "TriggerFuncArgs",
+  "TriggerFuncArg", "OptConstrFromTable", "ConstraintAttributeSpec",
+  "ConstraintDeferrabilitySpec", "ConstraintTimeSpec", "DropTrigStmt",
+  "CreateAssertStmt", "DropAssertStmt", "DefineStmt", "rowdefinition",
+  "definition", "def_list", "def_elem", "def_arg", "CreateOpClassStmt",
+  "opclass_item_list", "opclass_item", "opt_default", "opt_recheck",
+  "DropOpClassStmt", "DropStmt", "drop_type", "any_name_list", "any_name",
+  "attrs", "TruncateStmt", "FetchStmt", "fetch_direction", "from_in",
+  "CommentStmt", "comment_type", "comment_text", "GrantStmt", "RevokeStmt",
+  "privileges", "privilege_list", "privilege", "privilege_target",
+  "grantee_list", "grantee", "opt_grant_grant_option",
+  "function_with_argtypes_list", "function_with_argtypes", "GrantRoleStmt",
+  "RevokeRoleStmt", "opt_grant_admin_option", "opt_granted_by",
+  "IndexStmt", "index_opt_unique", "access_method_clause", "index_params",
+  "index_elem", "opt_class", "CreateFunctionStmt", "opt_or_replace",
+  "func_args", "func_args_list", "func_arg", "arg_class", "func_as",
+  "param_name", "func_return", "func_type", "createfunc_opt_list",
+  "common_func_opt_item", "createfunc_opt_item", "opt_definition",
+  "AlterFunctionStmt", "alterfunc_opt_list", "opt_restrict",
+  "RemoveFuncStmt", "RemoveAggrStmt", "aggr_argtype", "RemoveOperStmt",
+  "oper_argtypes", "any_operator", "CreateCastStmt", "cast_context",
+  "DropCastStmt", "ReindexStmt", "reindex_type", "opt_force", "RenameStmt",
+  "opt_column", "AlterObjectSchemaStmt", "AlterOwnerStmt", "RuleStmt",
+  "@2", "RuleActionList", "RuleActionMulti", "RuleActionStmt",
+  "RuleActionStmtOrEmpty", "event", "opt_instead", "DropRuleStmt",
+  "NotifyStmt", "ListenStmt", "UnlistenStmt", "TransactionStmt",
+  "opt_transaction", "transaction_mode_item", "transaction_mode_list",
+  "transaction_mode_list_or_empty", "ViewStmt", "LoadStmt", "CreatedbStmt",
+  "createdb_opt_list", "createdb_opt_item", "opt_equal",
+  "AlterDatabaseStmt", "AlterDatabaseSetStmt", "alterdb_opt_list",
+  "alterdb_opt_item", "DropdbStmt", "CreateDomainStmt", "AlterDomainStmt",
+  "opt_as", "CreateConversionStmt", "ClusterStmt", "VacuumStmt",
+  "AnalyzeStmt", "analyze_keyword", "opt_verbose", "opt_full",
+  "opt_freeze", "opt_name_list", "ExplainStmt", "ExplainableStmt",
+  "opt_analyze", "InsertStmt", "insert_rest", "insert_column_list",
+  "insert_column_item", "DeleteStmt", "using_clause", "LockStmt",
+  "opt_lock", "lock_type", "opt_nowait", "UpdateStmt", "DeclareCursorStmt",
+  "cursor_options", "opt_hold", "SelectStmt", "select_with_parens",
+  "select_no_parens", "select_clause", "simple_select", "into_clause",
+  "OptTempTableName", "opt_table", "opt_all", "opt_distinct",
+  "opt_sort_clause", "sort_clause", "sortby_list", "sortby",
+  "select_limit", "opt_select_limit", "select_limit_value",
+  "select_offset_value", "group_clause", "having_clause",
+  "for_locking_clause", "opt_for_locking_clause", "locked_rels_list",
+  "from_clause", "from_list", "table_ref", "joined_table", "alias_clause",
+  "join_type", "join_outer", "join_qual", "relation_expr", "func_table",
+  "where_clause", "TableFuncElementList", "TableFuncElement", "Typename",
+  "opt_array_bounds", "Iresult", "SimpleTypename", "ConstTypename",
+  "GenericType", "Numeric", "opt_float", "opt_numeric", "opt_decimal",
+  "Bit", "ConstBit", "BitWithLength", "BitWithoutLength", "Character",
+  "ConstCharacter", "CharacterWithLength", "CharacterWithoutLength",
+  "character", "opt_varying", "opt_charset", "ConstDatetime",
+  "ConstInterval", "opt_timezone", "opt_interval", "a_expr", "b_expr",
+  "c_expr", "func_expr", "row", "sub_type", "all_Op", "MathOp", "qual_Op",
+  "qual_all_Op", "subquery_Op", "expr_list", "extract_list", "type_list",
+  "array_expr_list", "array_expr", "extract_arg", "overlay_list",
+  "overlay_placing", "position_list", "substr_list", "substr_from",
+  "substr_for", "trim_list", "in_expr", "case_expr", "when_clause_list",
+  "when_clause", "case_default", "case_arg", "columnref", "indirection_el",
+  "indirection", "opt_indirection", "opt_asymmetric", "target_list",
+  "target_el", "update_target_list", "inf_col_list", "inf_val_list",
+  "update_target_el", "insert_target_list", "insert_target_el",
+  "relation_name", "qualified_name_list", "qualified_name", "name_list",
+  "name", "database_name", "access_method", "attr_name", "index_name",
+  "file_name", "func_name", "AexprConst", "Iconst", "Fconst", "Bconst",
+  "Xconst", "Sconst", "PosIntConst", "IntConst", "IntConstVar",
+  "AllConstVar", "StringConst", "PosIntStringConst", "NumConst",
+  "AllConst", "PosAllConst", "RoleId", "SpecialRuleRelation",
+  "ECPGConnect", "connection_target", "db_prefix", "server", "opt_server",
+  "server_name", "opt_port", "opt_connection_name", "opt_user", "ora_user",
+  "user_name", "char_variable", "opt_options", "ECPGCursorStmt",
+  "ECPGDeallocate", "ECPGVarDeclaration", "single_vt_declaration",
+  "single_var_declaration", "@3", "@4", "precision", "opt_scale",
+  "ecpg_interval", "ECPGDeclaration", "@5", "sql_startdeclare",
+  "sql_enddeclare", "var_type_declarations", "vt_declarations",
+  "variable_declarations", "type_declaration", "@6", "var_declaration",
+  "@7", "@8", "storage_declaration", "storage_clause", "storage_modifier",
+  "var_type", "enum_type", "enum_definition",
+  "struct_union_type_with_symbol", "@9", "struct_union_type", "@10",
+  "s_struct_union_symbol", "s_struct_union", "simple_type",
+  "unsigned_type", "signed_type", "opt_signed", "variable_list",
+  "variable", "opt_initializer", "opt_pointer", "ECPGDeclare",
+  "ECPGDisconnect", "dis_name", "connection_object", "ECPGExecute", "@11",
+  "execute_rest", "execstring", "prepared_name", "ECPGFree", "ECPGOpen",
+  "opt_ecpg_using", "ecpg_using", "using_descriptor", "into_descriptor",
+  "opt_sql", "ecpg_into", "using_list", "UsingConst", "ECPGPrepare",
+  "ECPGDescribe", "opt_output", "ECPGAllocateDescr", "ECPGDeallocateDescr",
+  "ECPGGetDescriptorHeader", "ECPGGetDescHeaderItems",
+  "ECPGGetDescHeaderItem", "ECPGSetDescriptorHeader",
+  "ECPGSetDescHeaderItems", "ECPGSetDescHeaderItem", "desc_header_item",
+  "ECPGGetDescriptor", "ECPGGetDescItems", "ECPGGetDescItem",
+  "ECPGSetDescriptor", "ECPGSetDescItems", "ECPGSetDescItem",
+  "descriptor_item", "ECPGSetAutocommit", "on_off", "ECPGSetConnection",
+  "ECPGTypedef", "@12", "opt_reference", "ECPGVar", "@13", "ECPGWhenever",
+  "action", "ECPGKeywords", "ECPGKeywords_vanames", "ECPGKeywords_rest",
+  "ECPGTypeName", "symbol", "ECPGColId", "ColId", "type_name",
+  "function_name", "ColLabel", "ECPGColLabelCommon", "ECPGColLabel",
+  "ECPGCKeywords", "unreserved_keyword", "ECPGunreserved_interval",
+  "ECPGunreserved", "ECPGunreserved_con", "col_name_keyword",
+  "func_name_keyword", "reserved_keyword", "into_list", "ecpgstart",
+  "c_args", "coutputvariable", "civarind", "civar", "indicator",
+  "cvariable", "ident", "quoted_ident_stringvar", "c_stuff_item",
   "c_stuff", "c_list", "c_term", "c_thing", "c_anything", 0
 };
 #endif
@@ -15605,7 +15600,8 @@ static const unsigned short yystos[] =
 
 #define YYACCEPT	goto yyacceptlab
 #define YYABORT		goto yyabortlab
-#define YYERROR		goto yyerrlab1
+#define YYERROR		goto yyerrorlab
+
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
    to ease the transition to the new meaning of YYERROR, for GCC.
@@ -15639,11 +15635,11 @@ while (0)
    are run).  */
 
 #ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)         \
-  Current.first_line   = Rhs[1].first_line;      \
-  Current.first_column = Rhs[1].first_column;    \
-  Current.last_line    = Rhs[N].last_line;       \
-  Current.last_column  = Rhs[N].last_column;
+# define YYLLOC_DEFAULT(Current, Rhs, N)		\
+   ((Current).first_line   = (Rhs)[1].first_line,	\
+    (Current).first_column = (Rhs)[1].first_column,	\
+    (Current).last_line    = (Rhs)[N].last_line,	\
+    (Current).last_column  = (Rhs)[N].last_column)
 #endif
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
@@ -15687,7 +15683,7 @@ do {								\
 
 /*------------------------------------------------------------------.
 | yy_stack_print -- Print the state stack from its BOTTOM up to its |
-| TOP (cinluded).                                                   |
+| TOP (included).                                                   |
 `------------------------------------------------------------------*/
 
 #if defined (__STDC__) || defined (__cplusplus)
@@ -15727,9 +15723,9 @@ yy_reduce_print (yyrule)
 #endif
 {
   int yyi;
-  unsigned int yylineno = yyrline[yyrule];
+  unsigned int yylno = yyrline[yyrule];
   YYFPRINTF (stderr, "Reducing stack by rule %d (line %u), ",
-             yyrule - 1, yylineno);
+             yyrule - 1, yylno);
   /* Print the symbols being reduced, and their result.  */
   for (yyi = yyprhs[yyrule]; 0 <= yyrhs[yyi]; yyi++)
     YYFPRINTF (stderr, "%s ", yytname [yyrhs[yyi]]);
@@ -15766,7 +15762,7 @@ int yydebug;
    SIZE_MAX < YYSTACK_BYTES (YYMAXDEPTH)
    evaluated with infinite-precision integer arithmetic.  */
 
-#if YYMAXDEPTH == 0
+#if defined (YYMAXDEPTH) && YYMAXDEPTH == 0
 # undef YYMAXDEPTH
 #endif
 
@@ -27334,8 +27330,8 @@ yyreduce:
 
     }
 
-/* Line 991 of yacc.c.  */
-#line 27338 "y.tab.c"
+/* Line 993 of yacc.c.  */
+#line 27335 "y.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -27376,18 +27372,33 @@ yyerrlab:
 	{
 	  YYSIZE_T yysize = 0;
 	  int yytype = YYTRANSLATE (yychar);
+	  const char* yyprefix;
 	  char *yymsg;
-	  int yyx, yycount;
+	  int yyx;
 
-	  yycount = 0;
 	  /* Start YYX at -YYN if negative to avoid negative indexes in
 	     YYCHECK.  */
-	  for (yyx = yyn < 0 ? -yyn : 0;
-	       yyx < (int) (sizeof (yytname) / sizeof (char *)); yyx++)
+	  int yyxbegin = yyn < 0 ? -yyn : 0;
+
+	  /* Stay within bounds of both yycheck and yytname.  */
+	  int yychecklim = YYLAST - yyn;
+	  int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+	  int yycount = 0;
+
+	  yyprefix = ", expecting ";
+	  for (yyx = yyxbegin; yyx < yyxend; ++yyx)
 	    if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
-	      yysize += yystrlen (yytname[yyx]) + 15, yycount++;
-	  yysize += yystrlen ("syntax error, unexpected ") + 1;
-	  yysize += yystrlen (yytname[yytype]);
+	      {
+		yysize += yystrlen (yyprefix) + yystrlen (yytname [yyx]);
+		yycount += 1;
+		if (yycount == 5)
+		  {
+		    yysize = 0;
+		    break;
+		  }
+	      }
+	  yysize += (sizeof ("syntax error, unexpected ")
+		     + yystrlen (yytname[yytype]));
 	  yymsg = (char *) YYSTACK_ALLOC (yysize);
 	  if (yymsg != 0)
 	    {
@@ -27396,16 +27407,13 @@ yyerrlab:
 
 	      if (yycount < 5)
 		{
-		  yycount = 0;
-		  for (yyx = yyn < 0 ? -yyn : 0;
-		       yyx < (int) (sizeof (yytname) / sizeof (char *));
-		       yyx++)
+		  yyprefix = ", expecting ";
+		  for (yyx = yyxbegin; yyx < yyxend; ++yyx)
 		    if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR)
 		      {
-			const char *yyq = ! yycount ? ", expecting " : " or ";
-			yyp = yystpcpy (yyp, yyq);
+			yyp = yystpcpy (yyp, yyprefix);
 			yyp = yystpcpy (yyp, yytname[yyx]);
-			yycount++;
+			yyprefix = " or ";
 		      }
 		}
 	      yyerror (yymsg);
@@ -27426,51 +27434,56 @@ yyerrlab:
       /* If just tried and failed to reuse lookahead token after an
 	 error, discard it.  */
 
-      /* Return failure if at end of input.  */
-      if (yychar == YYEOF)
+      if (yychar <= YYEOF)
         {
-	  /* Pop the error token.  */
-          YYPOPSTACK;
-	  /* Pop the rest of the stack.  */
-	  while (yyss < yyssp)
-	    {
-	      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-	      yydestruct (yystos[*yyssp], yyvsp);
-	      YYPOPSTACK;
-	    }
-	  YYABORT;
+          /* If at end of input, pop the error token,
+	     then the rest of the stack, then return failure.  */
+	  if (yychar == YYEOF)
+	     for (;;)
+	       {
+		 YYPOPSTACK;
+		 if (yyssp == yyss)
+		   YYABORT;
+		 YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
+		 yydestruct (yystos[*yyssp], yyvsp);
+	       }
         }
+      else
+	{
+	  YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
+	  yydestruct (yytoken, &yylval);
+	  yychar = YYEMPTY;
 
-      YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
-      yydestruct (yytoken, &yylval);
-      yychar = YYEMPTY;
-
+	}
     }
 
   /* Else will try to reuse lookahead token after shifting the error
      token.  */
-  goto yyerrlab2;
+  goto yyerrlab1;
 
 
-/*----------------------------------------------------.
-| yyerrlab1 -- error raised explicitly by an action.  |
-`----------------------------------------------------*/
-yyerrlab1:
+/*---------------------------------------------------.
+| yyerrorlab -- error raised explicitly by YYERROR.  |
+`---------------------------------------------------*/
+yyerrorlab:
 
-  /* Suppress GCC warning that yyerrlab1 is unused when no action
-     invokes YYERROR.  */
-#if defined (__GNUC_MINOR__) && 2093 <= (__GNUC__ * 1000 + __GNUC_MINOR__)
-  __attribute__ ((__unused__))
+#ifdef __GNUC__
+  /* Pacify GCC when the user code never invokes YYERROR and the label
+     yyerrorlab therefore never appears in user code.  */
+  if (0)
+     goto yyerrorlab;
 #endif
 
+  yyvsp -= yylen;
+  yyssp -= yylen;
+  yystate = *yyssp;
+  goto yyerrlab1;
 
-  goto yyerrlab2;
 
-
-/*---------------------------------------------------------------.
-| yyerrlab2 -- pop states until the error token can be shifted.  |
-`---------------------------------------------------------------*/
-yyerrlab2:
+/*-------------------------------------------------------------.
+| yyerrlab1 -- common code for both syntax error and YYERROR.  |
+`-------------------------------------------------------------*/
+yyerrlab1:
   yyerrstatus = 3;	/* Each real token shifted decrements this.  */
 
   for (;;)
@@ -27493,9 +27506,8 @@ yyerrlab2:
 
       YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
       yydestruct (yystos[yystate], yyvsp);
-      yyvsp--;
-      yystate = *--yyssp;
-
+      YYPOPSTACK;
+      yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
     }
 

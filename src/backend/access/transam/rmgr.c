@@ -14,6 +14,7 @@
 #include "access/multixact.h"
 #include "access/nbtree.h"
 #include "access/rtree.h"
+#include "access/bitmap.h"
 #include "access/xact.h"
 #include "access/xlog_internal.h"
 #include "commands/dbcommands.h"
@@ -38,5 +39,6 @@ const RmgrData RmgrTable[RM_MAX_ID + 1] = {
 	{"Hash", hash_redo, hash_desc, NULL, NULL},
 	{"Rtree", rtree_redo, rtree_desc, NULL, NULL},
 	{"Gist", gist_redo, gist_desc, gist_xlog_startup, gist_xlog_cleanup},
-	{"Sequence", seq_redo, seq_desc, NULL, NULL}
+	{"Sequence", seq_redo, seq_desc, NULL, NULL},
+ 	{"Bitmap", bitmap_redo, bitmap_desc, NULL, NULL}
 };

@@ -45,8 +45,8 @@ gmake --version
      * You need an ISO/ANSI C compiler. Recent versions of GCC are
        recommendable, but PostgreSQL is known to build with a wide variety
        of compilers from different vendors.
-     * tar is required to unpack the source distribution in the first
-       place, in addition to either gzip or bzip2.
+     * gzip is needed to unpack the distribution in the first place. If
+       you are reading this, you probably already got past that hurdle.
      * The GNU Readline library (for comfortable line editing and command
        history retrieval) will be used by default. If you don't want to
        use it then you must specify the "--without-readline" option for
@@ -55,10 +55,6 @@ gmake --version
        you are using a package-based Linux distribution, be aware that you
        need both the readline and readline-devel packages, if those are
        separate in your distribution.
-     * The zlib compression library will be used by default. If you don't
-       want to use it then you must specify the "--without-zlib" option
-       for "configure". Using this option disables support for compressed
-       archives in pg_dump and pg_restore.
      * Additional software is needed to build PostgreSQL on Windows. You
        can build PostgreSQL for NT-based versions of Windows (like Windows
        XP and 2003) using MinGW; see "doc/FAQ_MINGW" for details. You can
@@ -118,7 +114,7 @@ gmake --version
        display a program's messages in a language other than English, you
        need an implementation of the Gettext API. Some operating systems
        have this built-in (e.g., Linux, NetBSD, Solaris), for other
-       systems you can download an add-on package from
+       systems you can download an add-on package from here:
        http://developer.postgresql.org/~petere/bsd-gettext/. If you are
        using the Gettext implementation in the GNU C library then you will
        additionally need the GNU Gettext package for some utility
@@ -155,7 +151,7 @@ gmake --version
 
    The internal data storage format changes with new releases of
    PostgreSQL. Therefore, if you are upgrading an existing installation
-   that does not have a version number "8.1.x", you must back up and
+   that does not have a version number "8.0.x", you must back up and
    restore your data as shown here. These instructions assume that your
    existing installation is under the "/usr/local/pgsql" directory, and
    that the data area is in "/usr/local/pgsql/data". Substitute your paths
@@ -169,9 +165,11 @@ gmake --version
 pg_dumpall > outputfile
        If you need to preserve OIDs (such as when using them as foreign
        keys), then use the "-o" option when running pg_dumpall.
+       pg_dumpall does not save large objects. Check the documentation if
+       you need to do this.
        To make the backup, you can use the pg_dumpall command from the
        version you are currently running. For best results, however, try
-       to use the pg_dumpall command from PostgreSQL 8.1.3, since this
+       to use the pg_dumpall command from PostgreSQL 8.0.2, since this
        version contains bug fixes and improvements over older versions.
        While this advice might seem idiosyncratic since you haven't
        installed the new version yet, it is advisable to follow it if you
@@ -199,7 +197,7 @@ kill -INT processID
        this:
 mv /usr/local/pgsql /usr/local/pgsql.old
 
-   After you have installed PostgreSQL 8.1.3, create a new database
+   After you have installed PostgreSQL 8.0.2, create a new database
    directory and start the new server. Remember that you must execute
    these commands while logged in to the special database user account
    (which you already have if you are upgrading).
@@ -207,7 +205,7 @@ mv /usr/local/pgsql /usr/local/pgsql.old
 /usr/local/pgsql/bin/postmaster -D /usr/local/pgsql/data
 
    Finally, restore your data with
-/usr/local/pgsql/bin/psql -d postgres -f outputfile
+/usr/local/pgsql/bin/psql -d template1 -f outputfile
 
    using the *new* psql.
 
@@ -375,8 +373,9 @@ mv /usr/local/pgsql /usr/local/pgsql.old
                 use a different version of Tcl you can specify the
                 directory in which to look for it.
 
-        --with-krb5
-                Build with support for Kerberos 5 authentication. On many
+        --with-krb4, --with-krb5
+                Build with support for Kerberos authentication. You can
+                use either Kerberos version 4 or 5, but not both. On many
                 systems, the Kerberos system is not installed in a
                 location that is searched by default (e.g.,
                 "/usr/include", "/usr/lib"), so you must use the options
@@ -386,9 +385,8 @@ mv /usr/local/pgsql /usr/local/pgsql.old
                 installation is sufficient before proceeding.
 
         --with-krb-srvnam=NAME
-                The default name of the Kerberos service principal.
-                postgres is the default. There's usually no reason to
-                change this.
+                The name of the Kerberos service principal. postgres is
+                the default. There's probably no reason to change this.
 
         --with-openssl
                 Build with support for SSL (encrypted) connections. This
@@ -405,19 +403,9 @@ mv /usr/local/pgsql /usr/local/pgsql.old
                 command-line editing and history in psql, so it is not
                 recommended.
 
-        --with-bonjour
-                Build with Bonjour support. This requires Bonjour support
-                in your operating system. Recommended on Mac OS X.
-
-        --enable-integer-datetimes
-                Use 64-bit integer storage for datetimes and intervals,
-                rather than the default floating-point storage. This
-                reduces the range of representable values but guarantees
-                microsecond precision across the full range (see the
-                documentation about datetime datatypes for more
-                information). Note also that the integer datetimes code is
-                newer than the floating-point code, and we still find bugs
-                in it from time to time.
+        --with-rendezvous
+                Build with Rendezvous support. This requires Rendezvous
+                support in your operating system. Recommended on Mac OS X.
 
         --disable-spinlocks
                 Allow the build to succeed even if PostgreSQL has no CPU
@@ -725,10 +713,10 @@ psql testdb
    PostgreSQL has been verified by the developer community to work on the
    platforms listed below. A supported platform generally means that
    PostgreSQL builds and installs according to these instructions and that
-   the regression tests pass. "Build farm" entries refer to active test
-   machines in the PostgreSQL Build Farm. Platform entries that show an
+   the regression tests pass. "Build farm" entries refer to builds
+   reported by the PostgreSQL Build Farm. Platform entries that show an
    older version of PostgreSQL are those that did not receive explicit
-   testing at the time of release of version 8.1 but that we still expect
+   testing at the time of release of version 8.0 but that we still expect
    to work.
 
      Note: If you are having problems with the installation on a
@@ -736,84 +724,79 @@ psql testdb
      <pgsql-ports@postgresql.org>, not to the people listed here.
 
    OS Processor Version Reported Remarks
-   AIX PowerPC 8.1.0 Build farm kookaburra (5.2, cc 6.0); asp (5.2, gcc
-   3.3.2) see doc/FAQ_AIX, particularly if using AIX 5.3 ML3
+   AIX PowerPC 8.0.0 Travis P (<twp@castle.fastmail.fm>), 2004-12-12 see
+   also doc/FAQ_AIX
    AIX RS6000 8.0.0 Hans-Jürgen Schönig (<hs@cybertec.at>), 2004-12-06 see
-   doc/FAQ_AIX
-   BSD/OS x86 8.1.0 Bruce Momjian (<pgman@candle.pha.pa.us>), 2005-10-26
+   also doc/FAQ_AIX
+   BSD/OS x86 8.0.0 Bruce Momjian (<pgman@candle.pha.pa.us>), 2004-12-07
    4.3.1
-   Debian GNU/Linux Alpha 8.1.0 Build farm hare (3.1, gcc 3.3.4)
-   Debian GNU/Linux AMD64 8.1.0 Build farm panda (sid, gcc 3.3.5)
-   Debian GNU/Linux ARM 8.1.0 Build farm penguin (3.1, gcc 3.3.4)
-   Debian GNU/Linux Athlon XP 8.1.0 Build farm rook (3.1, gcc 3.3.5)
+   Debian GNU/Linux Alpha 7.4 Noèl Köthe (<noel@debian.org>), 2003-10-25
+   Debian GNU/Linux AMD64 8.0.0 Build farm panda, snapshot 2004-12-06
+   01:20:02 sid, kernel 2.6
+   Debian GNU/Linux ARM 8.0.0 Jim Buttafuoco (<jim@contactbda.com>),
+   2005-01-06
    Debian GNU/Linux IA64 7.4 Noèl Köthe (<noel@debian.org>), 2003-10-25
    Debian GNU/Linux m68k 8.0.0 Noèl Köthe (<noel@debian.org>), 2004-12-09
    sid
-   Debian GNU/Linux MIPS 8.1.0 Build farm otter (3.1, gcc 3.3.4)
-   Debian GNU/Linux MIPSEL 8.1.0 Build farm lionfish (3.1, gcc 3.3.4);
-   corgi (3.1, gcc 3.3.4)
-   Debian GNU/Linux PA-RISC 8.1.0 Build farm kingfisher (3.1, gcc 3.3.5)
+   Debian GNU/Linux MIPS 8.0.0 Build farm lionfish, snapshot 2004-12-06
+   11:00:08 3.1 (sarge), kernel 2.4
+   Debian GNU/Linux PA-RISC 8.0.0 Noèl Köthe (<noel@debian.org>),
+   2004-12-07 sid
    Debian GNU/Linux PowerPC 8.0.0 Noèl Köthe (<noel@debian.org>),
    2004-12-15 sid
    Debian GNU/Linux S/390 7.4 Noèl Köthe (<noel@debian.org>), 2003-10-25
-   Debian GNU/Linux Sparc 8.1.0 Build farm dormouse (3.1, gcc 3.2.5;
-   64-bit)
+   Debian GNU/Linux Sparc 8.0.0 Noèl Köthe (<noel@debian.org>), 2004-12-09
+   sid, 32-bit
    Debian GNU/Linux x86 8.0.0 Peter Eisentraut (<peter_e@gmx.net>),
    2004-12-06 3.1 (sarge), kernel 2.6
-   Fedora AMD64 8.1.0 Build farm viper (FC3, gcc 3.4.2)
-   Fedora x86 8.1.0 Build farm thrush (FC1, gcc 3.3.2)
+   Fedora AMD64 8.0.0 John Gray (<jgray@azuli.co.uk>), 2004-12-12 FC3
+   Fedora x86 8.0.0 Build farm dog, snapshot 2004-12-06 02:06:01 FC1
    FreeBSD Alpha 7.4 Peter Eisentraut (<peter_e@gmx.net>), 2003-10-25 4.8
-   FreeBSD AMD64 8.1.0 Build farm platypus (5.2.1, gcc 3.3.3); dove (5.4,
-   gcc 3.4.2)
-   FreeBSD x86 8.1.0 Build farm octopus (4.11, gcc 2.95.4); flatworm (5.3,
-   gcc 3.4.2); echidna (6, gcc 3.4.2); herring (6, Intel cc 7.1)
-   Gentoo Linux AMD64 8.1.0 Build farm caribou (2.6.9, gcc 3.3.5)
-   Gentoo Linux IA64 8.1.0 Build farm stoat (2.6, gcc 3.3)
-   Gentoo Linux PowerPC 64 8.1.0 Build farm cobra (1.4.16, gcc 3.4.3)
+   FreeBSD x86 8.0.0 Build farm cockatoo, snapshot 2004-12-06 14:10:01
+   (4.10); Marc Fournier (<scrappy@postgresql.org>), 2004-12-07 (5.3)
+   Gentoo Linux AMD64 8.0.0 Jani Averbach (<jaa@jaa.iki.fi>), 2005-01-13
    Gentoo Linux x86 8.0.0 Paul Bort (<pbort@tmwsystems.com>), 2004-12-07
-   HP-UX IA64 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-15 11.23, gcc
-   and cc; see doc/FAQ_HPUX
-   HP-UX PA-RISC 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-15 10.20
-   and 11.23, gcc and cc; see doc/FAQ_HPUX
-   IRIX MIPS 8.1.0 Kenneth Marshall (<ktm@is.rice.edu>), 2005-11-04 6.5,
-   cc only
-   Mac OS X PowerPC 8.1.0 Build farm tuna (10.4.2, gcc 4.0); cuckoo
-   (10.3.9, gcc 3.3); wallaroo (10.3.8, gcc 3.3)
-   Mandrake Linux x86 8.1.0 Build farm shrew (10.0, gcc 3.3.2)
+   HP-UX IA64 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-01-06 11.23, gcc
+   and cc; see also doc/FAQ_HPUX
+   HP-UX PA-RISC 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-01-06 10.20
+   and 11.11, gcc and cc; see also doc/FAQ_HPUX
+   IRIX MIPS 7.4 Robert E. Bruccoleri (<bruc@stone.congenomics.com>),
+   2003-11-12 6.5.20, cc only
+   Mac OS X PowerPC 8.0.0 Andrew Rawnsley (<ronz@ravensfield.com>),
+   2004-12-07 10.3.5
+   Mandrakelinux x86 8.0.0 Build farm shrew, snapshot 2004-12-06 02:02:01
+   10.0
    NetBSD arm32 7.4 Patrick Welche (<prlw1@newn.cam.ac.uk>), 2003-11-12
    1.6ZE/acorn32
-   NetBSD m68k 8.1.0 Build farm osprey (2.0, gcc 3.3.3)
+   NetBSD m68k 8.0.0 Rémi Zara (<remi_zara@mac.com>), 2004-12-14 2.0
    NetBSD Sparc 7.4.1 Peter Eisentraut (<peter_e@gmx.net>), 2003-11-26
    1.6.1, 32-bit
    NetBSD x86 8.0.0 Build farm canary, snapshot 2004-12-06 03:30:00 1.6
    OpenBSD Sparc 8.0.0 Chris Mair (<list@1006.org>), 2005-01-10 3.3
-   OpenBSD Sparc64 8.1.0 Build farm spoonbill (3.6, gcc 3.3.2) compiler
-   bug affects contrib/seg
+   OpenBSD Sparc64 8.0.0 Build farm spoonbill, snapshot 2005-01-06
+   00:50:05 3.6
    OpenBSD x86 8.0.0 Build farm emu, snapshot 2004-12-06 11:35:03 3.6
-   Red Hat Linux AMD64 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23
-   RHEL 4
-   Red Hat Linux IA64 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23
-   RHEL 4
-   Red Hat Linux PowerPC 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23
-   RHEL 4
-   Red Hat Linux PowerPC 64 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>),
-   2005-10-23 RHEL 4
-   Red Hat Linux S/390 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23
-   RHEL 4
-   Red Hat Linux S/390x 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23
-   RHEL 4
-   Red Hat Linux x86 8.1.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2005-10-23 RHEL
-   4
-   Slackware Linux x86 8.1.0 Sergey Koposov (<math@sai.msu.ru>),
-   2005-10-24 10.0
-   Solaris Sparc 8.1.0 Build farm buzzard (Solaris 10, gcc 3.3.2); Robert
-   Lor (<Robert.Lor@sun.com>), 2005-11-04 (Solaris 9); Kenneth Marshall
-   (<ktm@is.rice.edu>), 2005-10-28 (Solaris 8, gcc 3.4.3) see
+   Red Hat Linux AMD64 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07
+   RHEL 3AS
+   Red Hat Linux IA64 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07
+   RHEL 3AS
+   Red Hat Linux PowerPC 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07
+   RHEL 3AS
+   Red Hat Linux PowerPC 64 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>),
+   2004-12-07 RHEL 3AS
+   Red Hat Linux S/390 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07
+   RHEL 3AS
+   Red Hat Linux S/390x 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07
+   RHEL 3AS
+   Red Hat Linux x86 8.0.0 Tom Lane (<tgl@sss.pgh.pa.us>), 2004-12-07 RHEL
+   3AS
+   Solaris Sparc 8.0.0 Kenneth Marshall (<ktm@is.rice.edu>), 2004-12-07
+   Solaris 8; see also doc/FAQ_Solaris
+   Solaris x86 8.0.0 Build farm kudu, snapshot 2004-12-10 02:30:04 (cc);
+   dragonfly, snapshot 2004-12-09 04:30:00 (gcc) Solaris 9; see also
    doc/FAQ_Solaris
-   Solaris x86 8.1.0 Robert Lor (<Robert.Lor@sun.com>), 2005-11-04
-   (Solaris 10) see doc/FAQ_Solaris
-   SUSE Linux AMD64 8.1.0 Josh Berkus (<josh@agliodbs.com>), 2005-10-23
-   SLES 9.3
+   SUSE Linux AMD64 8.0.0 Reinhard Max (<max@suse.de>), 2005-01-03 9.0,
+   9.1, 9.2, SLES 9
    SUSE Linux IA64 8.0.0 Reinhard Max (<max@suse.de>), 2005-01-03 SLES 9
    SUSE Linux PowerPC 8.0.0 Reinhard Max (<max@suse.de>), 2005-01-03 SLES
    9
@@ -823,14 +806,14 @@ psql testdb
    SUSE Linux S/390x 8.0.0 Reinhard Max (<max@suse.de>), 2005-01-03 SLES 9
    SUSE Linux x86 8.0.0 Reinhard Max (<max@suse.de>), 2005-01-03 9.0, 9.1,
    9.2, SLES 9
-   Tru64 UNIX Alpha 8.1.0 Honda Shigehiro (<fwif0083@mb.infoweb.ne.jp>),
-   2005-11-01 5.0, cc 6.1-011
-   UnixWare x86 8.1.0 Build farm firefly (7.1.4, cc 4.2) see doc/FAQ_SCO
-   Windows x86 8.1.0 Build farm loris (XP Pro, gcc 3.2.3); snake (Windows
-   Server 2003, gcc 3.4.2) see doc/FAQ_MINGW
-   Windows with Cygwin x86 8.1.0 Build farm ferret (XP Pro, gcc 3.3.3) see
-   doc/FAQ_CYGWIN
-   Yellow Dog Linux PowerPC 8.1.0 Build farm carp (4.0, gcc 3.3.3)
+   Tru64 UNIX Alpha 8.0.0 Honda Shigehiro (<fwif0083@mb.infoweb.ne.jp>),
+   2005-01-07 5.0
+   UnixWare x86 8.0.0 Peter Eisentraut (<peter_e@gmx.net>), 2004-12-14 cc,
+   7.1.4; see also doc/FAQ_SCO
+   Windows x86 8.0.0 Dave Page (<dpage@vale-housing.co.uk>), 2004-12-07 XP
+   Pro; see doc/FAQ_MINGW
+   Windows with Cygwin x86 8.0.0 Build farm gibbon, snapshot 2004-12-11
+   01:33:01 see doc/FAQ_CYGWIN
 
    Unsupported Platforms: The following platforms are either known not to
    work, or they used to work in a fairly distant previous release. We

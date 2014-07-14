@@ -10,10 +10,10 @@
  * amounts are sorted using temporary files and a standard external sort
  * algorithm.
  *
- * Portions Copyright (c) 1996-2005, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2006, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * $PostgreSQL: pgsql/src/include/utils/tuplesort.h,v 1.17 2004/12/31 22:03:46 pgsql Exp $
+ * $PostgreSQL: pgsql/src/include/utils/tuplesort.h,v 1.19 2006/03/05 15:59:08 momjian Exp $
  *
  *-------------------------------------------------------------------------
  */
@@ -66,6 +66,8 @@ extern bool tuplesort_getdatum(Tuplesortstate *state, bool forward,
 				   Datum *val, bool *isNull);
 
 extern void tuplesort_end(Tuplesortstate *state);
+
+extern int	tuplesort_merge_order(long allowedMem);
 
 /*
  * These routines may only be called if randomAccess was specified 'true'.

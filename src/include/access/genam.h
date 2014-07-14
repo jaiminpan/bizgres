@@ -18,7 +18,7 @@
 #include "access/relscan.h"
 #include "access/sdir.h"
 #include "nodes/primnodes.h"
-
+#include "access/bitmap.h"
 
 /*
  * Struct for statistics returned by bulk-delete operation
@@ -84,6 +84,9 @@ extern IndexScanDesc index_beginscan(Relation heapRelation,
 extern IndexScanDesc index_beginscan_multi(Relation indexRelation,
 					  Snapshot snapshot,
 					  int nkeys, ScanKey key);
+extern IndexScanDesc index_beginscan_bitmapwords
+	(Relation indexRelation, Snapshot snapshot,
+	 int nkeys, ScanKey key);
 extern void index_rescan(IndexScanDesc scan, ScanKey key);
 extern void index_endscan(IndexScanDesc scan);
 extern void index_markpos(IndexScanDesc scan);
@@ -94,6 +97,11 @@ extern bool index_getnext_indexitem(IndexScanDesc scan,
 extern bool index_getmulti(IndexScanDesc scan,
 			   ItemPointer tids, int32 max_tids,
 			   int32 *returned_tids);
+extern bool index_getbitmapwords(IndexScanDesc scan,
+								 uint32 maxNumOfWords,
+								 uint32 *returnedNumOfWords,
+								 BM_HRL_WORD* headerWords,
+								 BM_HRL_WORD* contentWords);
 
 extern IndexBulkDeleteResult *index_bulk_delete(Relation indexRelation,
 				  IndexBulkDeleteCallback callback,

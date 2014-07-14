@@ -17,7 +17,8 @@
 #include "nodes/execnodes.h"
 
 extern int	ExecCountSlotsBitmapOr(BitmapOr *node);
-extern BitmapOrState *ExecInitBitmapOr(BitmapOr *node, EState *estate);
+//extern BitmapIndexScanState *ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate, int eflags);
+extern BitmapOrState *ExecInitBitmapOr(BitmapOr *node, EState *estate, int eflags);
 extern Node *MultiExecBitmapOr(BitmapOrState *node);
 extern void ExecEndBitmapOr(BitmapOrState *node);
 extern void ExecReScanBitmapOr(BitmapOrState *node, ExprContext *exprCtxt);

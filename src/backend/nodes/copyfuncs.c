@@ -254,6 +254,7 @@ _copyIndexScan(IndexScan *from)
 	 * copy remainder of node
 	 */
 	COPY_SCALAR_FIELD(indexid);
+	COPY_SCALAR_FIELD(indexam);
 	COPY_NODE_FIELD(indexqual);
 	COPY_NODE_FIELD(indexqualorig);
 	COPY_NODE_FIELD(indexstrategy);
@@ -280,6 +281,7 @@ _copyBitmapIndexScan(BitmapIndexScan *from)
 	 * copy remainder of node
 	 */
 	COPY_SCALAR_FIELD(indexid);
+	COPY_SCALAR_FIELD(indexam);
 	COPY_NODE_FIELD(indexqual);
 	COPY_NODE_FIELD(indexqualorig);
 	COPY_NODE_FIELD(indexstrategy);

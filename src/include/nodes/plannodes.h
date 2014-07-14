@@ -144,6 +144,7 @@ typedef struct BitmapAnd
 {
 	Plan		plan;
 	List	   *bitmapplans;
+	bool		inmem;			/* use bitmap scan */
 } BitmapAnd;
 
 /* ----------------
@@ -158,6 +159,7 @@ typedef struct BitmapOr
 {
 	Plan		plan;
 	List	   *bitmapplans;
+	bool		inmem;			/* use bitmap scan */
 } BitmapOr;
 
 /*
@@ -209,6 +211,7 @@ typedef struct IndexScan
 	List	   *indexstrategy;	/* integer list of strategy numbers */
 	List	   *indexsubtype;	/* OID list of strategy subtypes */
 	ScanDirection indexorderdir;	/* forward or backward or don't care */
+	Oid			indexam;			/* OID of the access method (in pg_am) */
 } IndexScan;
 
 /* ----------------
@@ -232,10 +235,12 @@ typedef struct BitmapIndexScan
 {
 	Scan		scan;
 	Oid			indexid;		/* OID of index to scan */
+	Oid			indexam;		/* OID of the access method (in pg_am) */
 	List	   *indexqual;		/* list of index quals (OpExprs) */
 	List	   *indexqualorig;	/* the same in original form */
 	List	   *indexstrategy;	/* integer list of strategy numbers */
 	List	   *indexsubtype;	/* OID list of strategy subtypes */
+	bool		inmem; 			/* use bitmap scan */
 } BitmapIndexScan;
 
 /* ----------------
@@ -251,6 +256,7 @@ typedef struct BitmapHeapScan
 {
 	Scan		scan;
 	List	   *bitmapqualorig; /* index quals, in standard expr form */
+	bool		inmem; 			/* use bitmap scan */
 } BitmapHeapScan;
 
 /* ----------------

@@ -107,6 +107,7 @@ typedef struct RelationAmInfo
 	FmgrInfo	ambeginscan;
 	FmgrInfo	amgettuple;
 	FmgrInfo	amgetmulti;
+	FmgrInfo	amgetbitmapwords;
 	FmgrInfo	amrescan;
 	FmgrInfo	amendscan;
 	FmgrInfo	ammarkpos;

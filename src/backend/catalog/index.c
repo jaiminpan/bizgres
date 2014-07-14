@@ -474,6 +474,7 @@ index_create(Oid heapRelationId,
 	 * Only SELECT ... FOR UPDATE/SHARE are allowed while doing this
 	 */
 	heapRelation = heap_open(heapRelationId, ShareLock);
+  ereport(DEBUG1, (errmsg_internal("p1 index_create")));
 
 	/*
 	 * The index will be in the same namespace as its parent table, and is
@@ -1429,12 +1430,12 @@ IndexBuildHeapScan(Relation heapRelation,
 		snapshot = SnapshotAny;
 		OldestXmin = GetOldestXmin(heapRelation->rd_rel->relisshared);
 	}
-
+  ereport(DEBUG1, (errmsg_internal("start: heap_beginscan")));
 	scan = heap_beginscan(heapRelation, /* relation */
 						  snapshot,		/* seeself */
 						  0,	/* number of keys */
 						  NULL);	/* scan key */
-
+  ereport(DEBUG1, (errmsg_internal("end: heap_beginscan")));
 	reltuples = 0;
 
 	/*
@@ -1445,6 +1446,7 @@ IndexBuildHeapScan(Relation heapRelation,
 		bool		tupleIsAlive;
 
 		CHECK_FOR_INTERRUPTS();
+    ereport(DEBUG1, (errmsg_internal("tuple")));
 
 		if (snapshot == SnapshotAny)
 		{
@@ -1458,6 +1460,7 @@ IndexBuildHeapScan(Relation heapRelation,
 			 */
 			LockBuffer(scan->rs_cbuf, BUFFER_LOCK_SHARE);
 
+      ereport(DEBUG1, (errmsg_internal("buffer locked")));
 			switch (HeapTupleSatisfiesVacuum(heapTuple->t_data, OldestXmin,
 											 scan->rs_cbuf))
 			{

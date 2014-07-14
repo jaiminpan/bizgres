@@ -78,11 +78,11 @@ static void copy_path_costsize(Plan *dest, Path *src);
 static void copy_plan_costsize(Plan *dest, Plan *src);
 static SeqScan *make_seqscan(List *qptlist, List *qpqual, Index scanrelid);
 static IndexScan *make_indexscan(List *qptlist, List *qpqual, Index scanrelid,
-			   Oid indexid, List *indexqual, List *indexqualorig,
+			   Oid indexid, Oid indexam, List *indexqual, List *indexqualorig,
 			   List *indexstrategy, List *indexsubtype,
 			   ScanDirection indexscandir);
 static BitmapIndexScan *make_bitmap_indexscan(Index scanrelid, Oid indexid,
-					  List *indexqual,
+					  Oid indexam, List *indexqual,
 					  List *indexqualorig,
 					  List *indexstrategy,
 					  List *indexsubtype);
@@ -753,6 +753,7 @@ create_indexscan_plan(PlannerInfo *root,
 	List	   *indexquals = best_path->indexquals;
 	Index		baserelid = best_path->path.parent->relid;
 	Oid			indexoid = best_path->indexinfo->indexoid;
+	Oid			indexam = best_path->indexinfo->relam;
 	List	   *qpqual;
 	List	   *stripped_indexquals;
 	List	   *fixed_indexquals;
@@ -850,6 +851,7 @@ create_indexscan_plan(PlannerInfo *root,
 							   qpqual,
 							   baserelid,
 							   indexoid,
+							   indexam,
 							   fixed_indexquals,
 							   stripped_indexquals,
 							   indexstrategy,
@@ -1112,6 +1114,7 @@ create_bitmap_subplan(PlannerInfo *root, Path *bitmapqual,
 		/* then convert to a bitmap indexscan */
 		plan = (Plan *) make_bitmap_indexscan(iscan->scan.scanrelid,
 											  iscan->indexid,
+											  iscan->indexam,
 											  iscan->indexqual,
 											  iscan->indexqualorig,
 											  iscan->indexstrategy,
@@ -1833,6 +1836,7 @@ make_indexscan(List *qptlist,
 			   List *qpqual,
 			   Index scanrelid,
 			   Oid indexid,
+			   Oid indexam,
 			   List *indexqual,
 			   List *indexqualorig,
 			   List *indexstrategy,
@@ -1849,6 +1853,7 @@ make_indexscan(List *qptlist,
 	plan->righttree = NULL;
 	node->scan.scanrelid = scanrelid;
 	node->indexid = indexid;
+	node->indexam = indexam;
 	node->indexqual = indexqual;
 	node->indexqualorig = indexqualorig;
 	node->indexstrategy = indexstrategy;
@@ -1861,6 +1866,7 @@ make_indexscan(List *qptlist,
 static BitmapIndexScan *
 make_bitmap_indexscan(Index scanrelid,
 					  Oid indexid,
+					  Oid indexam,
 					  List *indexqual,
 					  List *indexqualorig,
 					  List *indexstrategy,
@@ -1876,10 +1882,15 @@ make_bitmap_indexscan(Index scanrelid,
 	plan->righttree = NULL;
 	node->scan.scanrelid = scanrelid;
 	node->indexid = indexid;
+	node->indexam = indexam;
 	node->indexqual = indexqual;
 	node->indexqualorig = indexqualorig;
 	node->indexstrategy = indexstrategy;
 	node->indexsubtype = indexsubtype;
+	if (node->indexam == BITMAP_AM_OID)
+		node->inmem = false;
+	else
+		node->inmem = true;
 
 	return node;
 }
@@ -1901,6 +1912,15 @@ make_bitmap_heapscan(List *qptlist,
 	plan->righttree = NULL;
 	node->scan.scanrelid = scanrelid;
 	node->bitmapqualorig = bitmapqualorig;
+
+	if (IsA(lefttree, BitmapIndexScan))
+		node->inmem = (((BitmapIndexScan*)lefttree)->indexam != BITMAP_AM_OID);
+	else if (IsA(lefttree, BitmapAnd))
+		node->inmem = ((BitmapAnd*)lefttree)->inmem;
+	else if (IsA(lefttree, BitmapOr))
+		node->inmem = ((BitmapOr*)lefttree)->inmem;
+	else
+		node->inmem = true;
 
 	return node;
 }
@@ -2013,6 +2033,7 @@ make_bitmap_and(List *bitmapplans)
 {
 	BitmapAnd  *node = makeNode(BitmapAnd);
 	Plan	   *plan = &node->plan;
+	ListCell   *subnode;
 
 	/* cost should be inserted by caller */
 	plan->targetlist = NIL;
@@ -2020,6 +2041,32 @@ make_bitmap_and(List *bitmapplans)
 	plan->lefttree = NULL;
 	plan->righttree = NULL;
 	node->bitmapplans = bitmapplans;
+
+	node->inmem = false;
+	foreach(subnode, bitmapplans)
+	{
+		Plan *subplan = (Plan *) lfirst(subnode);
+		if (IsA(subplan, BitmapIndexScan) &&
+			((BitmapIndexScan *)subplan)->indexam != BITMAP_AM_OID)
+		{
+			node->inmem = true;
+			break;
+		}
+
+		else if (IsA(subplan, BitmapAnd) &&
+				 ((BitmapAnd *)subplan)->inmem)
+		{
+			node->inmem = true;
+			break;
+		}
+			
+		else if (IsA(subplan, BitmapOr) &&
+				 ((BitmapOr *)subplan)->inmem)
+		{
+			node->inmem = true;
+			break;
+		}
+	}
 
 	return node;
 }
@@ -2029,6 +2076,7 @@ make_bitmap_or(List *bitmapplans)
 {
 	BitmapOr   *node = makeNode(BitmapOr);
 	Plan	   *plan = &node->plan;
+	ListCell   *subnode;
 
 	/* cost should be inserted by caller */
 	plan->targetlist = NIL;
@@ -2036,6 +2084,32 @@ make_bitmap_or(List *bitmapplans)
 	plan->lefttree = NULL;
 	plan->righttree = NULL;
 	node->bitmapplans = bitmapplans;
+
+	node->inmem = false;
+	foreach(subnode, bitmapplans)
+	{
+		Plan *subplan = (Plan *) lfirst(subnode);
+		if (IsA(subplan, BitmapIndexScan) &&
+			((BitmapIndexScan *)subplan)->indexam != BITMAP_AM_OID)
+		{
+			node->inmem = true;
+			break;
+		}
+
+		else if (IsA(subplan, BitmapAnd) &&
+				 ((BitmapAnd *)subplan)->inmem)
+		{
+			node->inmem = true;
+			break;
+		}
+			
+		else if (IsA(subplan, BitmapOr) &&
+				 ((BitmapOr *)subplan)->inmem)
+		{
+			node->inmem = true;
+			break;
+		}
+	}
 
 	return node;
 }

@@ -21,6 +21,7 @@
 #include "nodes/params.h"
 #include "nodes/plannodes.h"
 #include "nodes/tidbitmap.h"
+#include "nodes/ondiskbitmapwords.h"
 #include "utils/hsearch.h"
 #include "utils/tuplestore.h"
 
@@ -829,6 +830,8 @@ typedef struct BitmapAndState
 	PlanState	ps;				/* its first field is NodeTag */
 	PlanState **bitmapplans;	/* array of PlanStates for my inputs */
 	int			nplans;			/* number of input plans */
+	OnDiskBitmapWords **odbms;	/* OnDiskBitmapWords for each input */
+	OnDiskBitmapWords *resultOdbm;	/* the output OnDiskBitmapWords */
 } BitmapAndState;
 
 /* ----------------
@@ -840,6 +843,8 @@ typedef struct BitmapOrState
 	PlanState	ps;				/* its first field is NodeTag */
 	PlanState **bitmapplans;	/* array of PlanStates for my inputs */
 	int			nplans;			/* number of input plans */
+	OnDiskBitmapWords **odbms;	/* OnDiskBitmapWords for each input */
+	OnDiskBitmapWords *resultOdbm;	/* the output OnDiskBitmapWords */
 } BitmapOrState;
 
 /* ----------------------------------------------------------------
@@ -920,6 +925,7 @@ typedef struct BitmapIndexScanState
 {
 	ScanState	ss;				/* its first field is NodeTag */
 	TIDBitmap  *biss_result;
+	OnDiskBitmapWords *odbiss_result;
 	ScanKey		biss_ScanKeys;
 	int			biss_NumScanKeys;
 	ExprState **biss_RuntimeKeyInfo;
@@ -927,6 +933,7 @@ typedef struct BitmapIndexScanState
 	bool		biss_RuntimeKeysReady;
 	Relation	biss_RelationDesc;
 	IndexScanDesc biss_ScanDesc;
+	IndexScanDesc odbiss_ScanDesc;
 } BitmapIndexScanState;
 
 /* ----------------
@@ -945,7 +952,9 @@ typedef struct BitmapHeapScanState
 	ScanState	ss;				/* its first field is NodeTag */
 	List	   *bitmapqualorig;
 	TIDBitmap  *tbm;
+	OnDiskBitmapWords	*odbm;
 	TBMIterateResult *tbmres;
+	ODBMIterateResult *odbmres;
 	int			curslot;
 	int			minslot;
 	int			maxslot;
@@ -1147,8 +1156,9 @@ typedef struct HashJoinState
 typedef struct MaterialState
 {
 	ScanState	ss;				/* its first field is NodeTag */
-	void	   *tuplestorestate;	/* private state of tuplestore.c */
+	bool		randomAccess;	/* need random access to subplan output? */
 	bool		eof_underlying; /* reached end of underlying plan? */
+	void	   *tuplestorestate;	/* private state of tuplestore.c */
 } MaterialState;
 
 /* ----------------
@@ -1158,6 +1168,7 @@ typedef struct MaterialState
 typedef struct SortState
 {
 	ScanState	ss;				/* its first field is NodeTag */
+	bool		randomAccess;	/* need random access to sort output? */
 	bool		sort_Done;		/* sort completed yet? */
 	void	   *tuplesortstate; /* private state of tuplesort.c */
 } SortState;

@@ -117,7 +117,11 @@ typedef struct CopyStateData
 	char	   *escape;			/* CSV escape char (must be 1 byte) */
 	List	   *force_quote_atts;		/* integer list of attnums to FQ */
 	List	   *force_notnull_atts;		/* integer list of attnums to FNN */
-
+    
+	/* bizgres addition */
+	bool		escape_off;			/* treat backslashes as non-special? */
+    /* end bizgres addition */
+	
 	/* these are just for error messages, see copy_in_error_callback */
 	const char *cur_relname;	/* table name for error messages */
 	int			cur_lineno;		/* line number for error messages */
@@ -786,6 +790,11 @@ DoCopy(const CopyStmt *stmt)
 			cstate->escape = cstate->quote;
 	}
 
+	/* bizgres addition */
+	if (!cstate->binary && !cstate->csv_mode && !cstate->escape)
+		cstate->escape = "\\";			/* default escape for text mode */
+    /* end bizgres addition */
+
 	/* Only single-character delimiter strings are supported. */
 	if (strlen(cstate->delim) != 1)
 		ereport(ERROR,
@@ -810,11 +819,28 @@ DoCopy(const CopyStmt *stmt)
 				 errmsg("COPY quote must be a single character")));
 
 	/* Check escape */
-	if (!cstate->csv_mode && cstate->escape != NULL)
+	/* bizgres addition */
+	if (cstate->binary && cstate->escape != NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("COPY escape available only in CSV mode")));
-
+				 errmsg("COPY escape is not available in binary mode")));
+	
+	if (cstate->csv_mode && strlen(cstate->escape) != 1)
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("COPY escape in CSV format must be a single character")));
+	
+	if (!cstate->csv_mode && !cstate->binary && strlen(cstate->escape) != 1)
+	{
+		if (!strcmp(cstate->escape, "OFF") || !strcmp(cstate->escape, "off"))
+			cstate->escape_off = true;
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("COPY escape must be a single character, or [OFF/off] to disable escapes")));
+	}
+    /* end bizgres addition */
+	
 	if (cstate->csv_mode && strlen(cstate->escape) != 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
@@ -2064,7 +2090,15 @@ CopyReadLineText(CopyState cstate)
 	bool		need_data;
 	bool		hit_eof;
 	char		s[2];
-
+	
+	/* bizgres addition */
+	char		escapec = '\0';
+	/*
+	 * set the escape char for text format ('\\' by default).
+	 */
+	escapec = cstate->escape[0];
+	/* end bizgres addition */
+	
 	s[1] = 0;
 
 	/* set default status */
@@ -2203,8 +2237,9 @@ CopyReadLineText(CopyState cstate)
 			break;
 		}
 
-		if (c == '\\')
+		if (c == '\\' || c == escapec) /* bizgres modification */
 		{
+				
 			/*
 			 * If need more data, go back to loop top to load it.
 			 */
@@ -2212,7 +2247,7 @@ CopyReadLineText(CopyState cstate)
 			{
 				if (hit_eof)
 				{
-					/* backslash just before EOF, treat as data char */
+					/* escape just before EOF, treat as data char */
 					result = true;
 					break;
 				}
@@ -2221,12 +2256,25 @@ CopyReadLineText(CopyState cstate)
 				continue;
 			}
 
-			/*
-			 * In non-CSV mode, backslash quotes the following character even
-			 * if it's a newline, so we always advance to next character
+			/* 
+			 * bizgres modification: if c is the escape char, advance the
+			 * raw buf pointer to the next char in order to quote it. If,
+			 * however, this is a backslash, and backslash is not the escape
+			 * char, only look at the next char to see if we have a "\."
+			 * sequence, but don't advance the pointer as we don't want to 
+			 * quote it.
 			 */
+			if(c == escapec && c != '\\')
+			{
+				c = copy_raw_buf[raw_buf_ptr++];
+				continue; /* don't care about the next char, even if '.' */
+			}
+			
+			/* c is '\\'. Get next c to check for "\." */
 			c = copy_raw_buf[raw_buf_ptr++];
 
+			/* end bizgres modification */
+			
 			if (c == '.')
 			{
 				if (cstate->eol_type == EOL_CRNL)
@@ -2279,6 +2327,17 @@ CopyReadLineText(CopyState cstate)
 				result = true;	/* report EOF */
 				break;
 			}
+
+			/* 
+			 * bizgres modification: we saw a '\\' and wanted to see if
+			 * next ch is '.' which will be our end-marker. It was not.
+			 * now - if '\\' is actually our escape ch we are good, but if
+			 * it is not, we want to unfetch the last character as it could
+			 * be important (end of line ch for example).
+			 */
+			if(escapec != '\\')
+				raw_buf_ptr--;
+			/* end bizgres modification */
 		}
 
 		/*
@@ -2705,6 +2764,9 @@ static int
 CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 {
 	char		delimc = cstate->delim[0];
+	/* bizgres addition */
+	char		escapec = cstate->escape[0];
+	/* end bizgres addition */
 	int			fieldno;
 	char	   *output_ptr;
 	char	   *cur_ptr;
@@ -2761,6 +2823,11 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 		start_ptr = cur_ptr;
 		fieldvals[fieldno] = output_ptr;
 
+		/* bizgres addition */
+		if (cstate->escape_off)
+			escapec = delimc; /* look only for delimiters, escapes are disabled */
+		/* end bizgres addition */
+		
 		/* Scan data for field */
 		for (;;)
 		{
@@ -2775,7 +2842,7 @@ CopyReadAttributesText(CopyState cstate, int maxfields, char **fieldvals)
 				found_delim = true;
 				break;
 			}
-			if (c == '\\')
+			if (c == escapec) /* bizgres modification: change '\\' to escapec */
 			{
 				if (cur_ptr >= line_end_ptr)
 					break;

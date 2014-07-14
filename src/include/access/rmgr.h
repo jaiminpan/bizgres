@@ -26,6 +26,7 @@ typedef uint8 RmgrId;
 #define RM_RTREE_ID				13
 #define RM_GIST_ID				14
 #define RM_SEQ_ID				15
-#define RM_MAX_ID				RM_SEQ_ID
+#define RM_BITMAP_ID			16
+#define RM_MAX_ID				RM_BITMAP_ID
 
 #endif   /* RMGR_H */

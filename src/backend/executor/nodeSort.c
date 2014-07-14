@@ -89,7 +89,7 @@ ExecSort(SortState *node)
 											  plannode->sortOperators,
 											  plannode->sortColIdx,
 											  work_mem,
-											  true /* randomAccess */ );
+											  node->randomAccess);
 		node->tuplesortstate = (void *) tuplesortstate;
 
 		/*
@@ -146,11 +146,11 @@ ExecSort(SortState *node)
  *		ExecInitSort
  *
  *		Creates the run-time state information for the sort node
- *		produced by the planner and initailizes its outer subtree.
+ *		produced by the planner and initializes its outer subtree.
  * ----------------------------------------------------------------
  */
 SortState *
-ExecInitSort(Sort *node, EState *estate)
+ExecInitSort(Sort *node, EState *estate, int eflags)
 {
 	SortState  *sortstate;
 
@@ -163,6 +163,15 @@ ExecInitSort(Sort *node, EState *estate)
 	sortstate = makeNode(SortState);
 	sortstate->ss.ps.plan = (Plan *) node;
 	sortstate->ss.ps.state = estate;
+
+	/*
+	 * We must have random access to the sort output to do backward scan
+	 * or mark/restore.  We also prefer to materialize the sort output
+	 * if we might be called on to rewind and replay it many times.
+	 */
+	sortstate->randomAccess = (eflags & (EXEC_FLAG_REWIND |
+										 EXEC_FLAG_BACKWARD |
+										 EXEC_FLAG_MARK)) != 0;
 
 	sortstate->sort_Done = false;
 	sortstate->tuplesortstate = NULL;
@@ -185,9 +194,14 @@ ExecInitSort(Sort *node, EState *estate)
 	ExecInitScanTupleSlot(estate, &sortstate->ss);
 
 	/*
-	 * initializes child nodes
+	 * initialize child nodes
+	 *
+	 * We shield the child node from the need to support REWIND, BACKWARD,
+	 * or MARK/RESTORE.
 	 */
-	outerPlanState(sortstate) = ExecInitNode(outerPlan(node), estate);
+	eflags &= ~(EXEC_FLAG_REWIND | EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK);
+
+	outerPlanState(sortstate) = ExecInitNode(outerPlan(node), estate, eflags);
 
 	/*
 	 * initialize tuple type.  no need to initialize projection info because
@@ -225,6 +239,8 @@ ExecEndSort(SortState *node)
 	 * clean out the tuple table
 	 */
 	ExecClearTuple(node->ss.ss_ScanTupleSlot);
+	/* must drop pointer to sort result tuple */
+	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
 
 	/*
 	 * Release tuplesort resources
@@ -292,6 +308,7 @@ ExecReScanSort(SortState *node, ExprContext *exprCtxt)
 	if (!node->sort_Done)
 		return;
 
+	/* must drop pointer to sort result tuple */
 	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
 
 	/*
@@ -300,11 +317,18 @@ ExecReScanSort(SortState *node, ExprContext *exprCtxt)
 	 *
 	 * Otherwise we can just rewind and rescan the sorted output.
 	 */
-	if (((PlanState *) node)->lefttree->chgParam != NULL)
+	if (((PlanState *) node)->lefttree->chgParam != NULL ||
+		!node->randomAccess)
 	{
 		node->sort_Done = false;
 		tuplesort_end((Tuplesortstate *) node->tuplesortstate);
 		node->tuplesortstate = NULL;
+		/*
+		 * if chgParam of subnode is not null then plan will be re-scanned by
+		 * first ExecProcNode.
+		 */
+		if (((PlanState *) node)->lefttree->chgParam == NULL)
+			ExecReScan(((PlanState *) node)->lefttree, exprCtxt);
 	}
 	else
 		tuplesort_rescan((Tuplesortstate *) node->tuplesortstate);

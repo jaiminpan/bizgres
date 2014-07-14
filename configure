@@ -3247,7 +3247,7 @@ else
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define PG_VERSION_STR "PostgreSQL $PACKAGE_VERSION on $host, compiled by $cc_string"
+#define PG_VERSION_STR "PostgreSQL $PACKAGE_VERSION (Bizgres Database Release-0_9_GA) on $host, compiled by $cc_string"
 _ACEOF
 
 

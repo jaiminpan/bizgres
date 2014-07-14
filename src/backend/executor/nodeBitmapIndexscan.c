@@ -38,11 +38,15 @@ Node *
 MultiExecBitmapIndexScan(BitmapIndexScanState *node)
 {
 #define MAX_TIDS	1024
-	TIDBitmap  *tbm;
+	TIDBitmap  *tbm = NULL;
 	IndexScanDesc scandesc;
+	IndexScanDesc odScanDesc;
 	ItemPointerData tids[MAX_TIDS];
 	int32		ntids;
 	double		nTuples = 0;
+
+	OnDiskBitmapWords *odbm = NULL;
+	bool	inmem = false;
 
 	/* must provide our own instrumentation support */
 	if (node->ss.ps.instrument)
@@ -52,54 +56,80 @@ MultiExecBitmapIndexScan(BitmapIndexScanState *node)
 	 * extract necessary information from index scan node
 	 */
 	scandesc = node->biss_ScanDesc;
+	odScanDesc = node->odbiss_ScanDesc;
 
 	/*
-	 * If we have runtime keys and they've not already been set up, do it now.
+	 * If we have runtime keys and they've not already been set up, do it
+	 * now.
 	 */
 	if (node->biss_RuntimeKeyInfo && !node->biss_RuntimeKeysReady)
 		ExecReScan((PlanState *) node, NULL);
 
-	/*
-	 * Prepare the result bitmap.  Normally we just create a new one to pass
-	 * back; however, our parent node is allowed to store a pre-made one into
-	 * node->biss_result, in which case we just OR our tuple IDs into the
-	 * existing bitmap.  (This saves needing explicit UNION steps.)
-	 */
-	if (node->biss_result)
-	{
-		tbm = node->biss_result;
-		node->biss_result = NULL;		/* reset for next time */
-	}
-	else
-	{
-		/* XXX should we use less than work_mem for this? */
-		tbm = tbm_create(work_mem * 1024L);
-	}
+	inmem = ((BitmapIndexScan*)((PlanState*)node)->plan)->inmem;
 
-	/*
-	 * Get TIDs from index and insert into bitmap
-	 */
-	for (;;)
-	{
-		bool		more = index_getmulti(scandesc, tids, MAX_TIDS, &ntids);
+	if (inmem) {
 
-		if (ntids > 0)
+		node->odbiss_result = NULL;
+
+		/*
+		 * Prepare the result bitmap.  Normally we just create a new one to pass
+		 * back; however, our parent node is allowed to store a pre-made one
+		 * into node->biss_result, in which case we just OR our tuple IDs into
+		 * the existing bitmap.  (This saves needing explicit UNION steps.)
+		 */
+		if (node->biss_result)
 		{
-			tbm_add_tuples(tbm, tids, ntids);
-			nTuples += ntids;
+			tbm = node->biss_result;
+			node->biss_result = NULL;		/* reset for next time */
+		}
+		else
+		{
+			/* XXX should we use less than work_mem for this? */
+			tbm = tbm_create(work_mem * 1024L);
 		}
 
-		if (!more)
-			break;
+		/*
+	 	* Get TIDs from index and insert into bitmap
+	 	*/
+		for (;;)
+		{
+			bool	more = index_getmulti(scandesc, tids, MAX_TIDS, &ntids);
 
-		CHECK_FOR_INTERRUPTS();
+			if (ntids > 0)
+			{
+				tbm_add_tuples(tbm, tids, ntids);
+				nTuples += ntids;
+			}
+
+			if (!more)
+				break;
+
+			CHECK_FOR_INTERRUPTS();
+		}
+	}
+
+	else {
+		node->biss_result = NULL;
+
+		if (node->odbiss_result == NULL)
+			node->odbiss_result = odbm_create(ODBM_MAX_WORDS);
+
+		odbm = node->odbiss_result;
+
+		index_getbitmapwords(odScanDesc, odbm->maxNumOfWords,
+							&(odbm->numOfWords), 
+							odbm->bitmapHeaderWords,
+							odbm->bitmapContentWords);
 	}
 
 	/* must provide our own instrumentation support */
 	if (node->ss.ps.instrument)
 		InstrStopNodeMulti(node->ss.ps.instrument, nTuples);
 
-	return (Node *) tbm;
+	if (tbm != NULL)
+		return (Node *) tbm;
+	else
+		return (Node *) odbm;
 }
 
 /* ----------------------------------------------------------------
@@ -150,6 +180,8 @@ ExecBitmapIndexReScan(BitmapIndexScanState *node, ExprContext *exprCtxt)
 
 	/* reset index scan */
 	index_rescan(node->biss_ScanDesc, node->biss_ScanKeys);
+	if (node->odbiss_ScanDesc != NULL)
+		index_rescan(node->odbiss_ScanDesc, node->biss_ScanKeys);
 }
 
 /* ----------------------------------------------------------------
@@ -161,12 +193,14 @@ ExecEndBitmapIndexScan(BitmapIndexScanState *node)
 {
 	Relation	indexRelationDesc;
 	IndexScanDesc indexScanDesc;
+	IndexScanDesc odIndexScanDesc;
 
 	/*
 	 * extract information from the node
 	 */
 	indexRelationDesc = node->biss_RelationDesc;
 	indexScanDesc = node->biss_ScanDesc;
+	odIndexScanDesc = node->odbiss_ScanDesc;
 
 	/*
 	 * Free the exprcontext ... now dead code, see ExecFreeExprContext
@@ -180,6 +214,11 @@ ExecEndBitmapIndexScan(BitmapIndexScanState *node)
 	 * close the index relation
 	 */
 	index_endscan(indexScanDesc);
+	if (odIndexScanDesc != NULL)
+	{
+		index_endscan(odIndexScanDesc);
+		odIndexScanDesc = NULL;
+	}
 	index_close(indexRelationDesc);
 }
 
@@ -190,13 +229,16 @@ ExecEndBitmapIndexScan(BitmapIndexScanState *node)
  * ----------------------------------------------------------------
  */
 BitmapIndexScanState *
-ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate)
+ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate, int eflags)
 {
 	BitmapIndexScanState *indexstate;
 	ScanKey		scanKeys;
 	int			numScanKeys;
 	ExprState **runtimeKeyInfo;
 	bool		have_runtime_keys;
+
+	/* check for unsupported flags */
+	Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
 
 	/*
 	 * create state structure
@@ -207,6 +249,7 @@ ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate)
 
 	/* normally we don't make the result bitmap till runtime */
 	indexstate->biss_result = NULL;
+	indexstate->odbiss_result = NULL;
 
 	/*
 	 * Miscellaneous initialization
@@ -288,6 +331,19 @@ ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate)
 							  estate->es_snapshot,
 							  numScanKeys,
 							  scanKeys);
+	if (node->indexam == BITMAP_AM_OID)
+	{
+		indexstate->odbiss_ScanDesc =
+			index_beginscan_bitmapwords(indexstate->biss_RelationDesc,
+										estate->es_snapshot,
+										numScanKeys,
+										scanKeys);
+		node->inmem = false;
+	} else
+	{
+		indexstate->odbiss_ScanDesc = NULL;
+		node->inmem = true;
+	}
 
 	/*
 	 * all done.

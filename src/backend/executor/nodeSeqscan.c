@@ -185,7 +185,7 @@ InitScanRelation(SeqScanState *node, EState *estate)
  * ----------------------------------------------------------------
  */
 SeqScanState *
-ExecInitSeqScan(SeqScan *node, EState *estate)
+ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 {
 	SeqScanState *scanstate;
 

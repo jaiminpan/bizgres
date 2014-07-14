@@ -64,6 +64,10 @@ BitmapHeapNext(BitmapHeapScanState *node)
 	OffsetNumber targoffset;
 	TupleTableSlot *slot;
 
+	OnDiskBitmapWords *odbm;
+	ODBMIterateResult *odbmres;
+	bool inmem = false;
+
 	/*
 	 * extract necessary information from index scan node
 	 */
@@ -74,6 +78,8 @@ BitmapHeapNext(BitmapHeapScanState *node)
 	scanrelid = ((BitmapHeapScan *) node->ss.ps.plan)->scan.scanrelid;
 	tbm = node->tbm;
 	tbmres = node->tbmres;
+	odbm = node->odbm;
+	odbmres = node->odbmres;
 
 	/*
 	 * Clear any reference to the previously returned tuple.  The idea here is
@@ -111,6 +117,91 @@ BitmapHeapNext(BitmapHeapScanState *node)
 		estate->es_evTupleNull[scanrelid - 1] = true;
 
 		return slot;
+	}
+
+	/* check if this requires in-mem bitmap scan or on-disk bitmap index. */
+	inmem = ((BitmapHeapScan*)(((PlanState*)node)->plan))->inmem;
+
+	/*
+	 * If the underline indexes are on disk bitmap indexes
+	 */
+	if (!inmem) {
+		uint64	nextTid = 0;
+
+		if (odbm == NULL)
+		{
+			odbm = odbm_create(ODBM_MAX_WORDS);
+			node->odbm = odbm;
+		}
+
+		if (odbmres == NULL)
+		{
+			odbmres = odbm_res_create(odbm);
+			node->odbmres = odbmres;
+		}
+
+		for (;;)
+		{
+			/* If we have used up the words from previous scan, or 
+				we haven't scan the underlying index scan for wrods yet,
+				then do it.
+			 */
+			if (odbm->numOfWords == 0 &&
+				odbmres->nextTidLoc >= odbmres->numOfTids)
+			{
+
+				Plan* outerPlan = (((PlanState*)node)->lefttree)->plan;
+				odbm_set_bitmaptype(outerPlan, false);
+
+				odbm->firstTid = odbmres->nextTid;
+				odbm->startNo = 0;
+				odbm_set_child_resultnode(((PlanState*)node)->lefttree,
+										  odbm);
+				odbm = (OnDiskBitmapWords *)
+					MultiExecProcNode(outerPlanState(node));
+
+				if (!odbm || !IsA(odbm, OnDiskBitmapWords))
+					elog(ERROR, "unrecognized result from subplan");
+
+				odbm_begin_iterate(node->odbm, node->odbmres);
+			}
+
+			/* If we can not find more words, then this scan is over. */
+			if (odbm == NULL ||
+				(odbm->numOfWords == 0 && 
+				 odbmres->nextTidLoc >= odbmres->numOfTids))
+				return ExecClearTuple(slot);
+
+			nextTid = odbm_findnexttid(odbm, odbmres);
+
+			if (nextTid == 0)
+				continue;
+
+			ItemPointerSet(&scandesc->rs_ctup.t_self,
+							(nextTid-1)/MaxNumHeapTuples,
+							((nextTid-1)%MaxNumHeapTuples)+1);
+			/* fetch the heap tuple and see if it matches the snapshot. */
+			if (heap_release_fetch(scandesc->rs_rd,
+								   scandesc->rs_snapshot,
+								   &scandesc->rs_ctup,
+								   &scandesc->rs_cbuf,
+								   true,
+								   &scandesc->rs_pgstat_info))
+			{
+				/*
+			 	* Set up the result slot to point to this tuple.
+				 * Note that the slot acquires a pin on the buffer.
+				 */
+				ExecStoreTuple(&scandesc->rs_ctup,
+							   slot,
+							   scandesc->rs_cbuf,
+							   false);
+
+			
+				/* return this tuple */
+				return slot;
+			}
+		}
 	}
 
 	/*
@@ -336,6 +427,10 @@ ExecBitmapHeapReScan(BitmapHeapScanState *node, ExprContext *exprCtxt)
 	node->tbm = NULL;
 	node->tbmres = NULL;
 
+	if (node->odbm)
+		odbm_free(node->odbm);
+	node->odbm = NULL;
+
 	/*
 	 * Always rescan the input immediately, to ensure we can pass down any
 	 * outer tuple that might be used in index quals.
@@ -381,6 +476,9 @@ ExecEndBitmapHeapScan(BitmapHeapScanState *node)
 	if (node->tbm)
 		tbm_free(node->tbm);
 
+	if (node->odbm)
+		odbm_free(node->odbm);
+
 	/*
 	 * close heap scan
 	 */
@@ -404,7 +502,7 @@ ExecEndBitmapHeapScan(BitmapHeapScanState *node)
  * ----------------------------------------------------------------
  */
 BitmapHeapScanState *
-ExecInitBitmapHeapScan(BitmapHeapScan *node, EState *estate)
+ExecInitBitmapHeapScan(BitmapHeapScan *node, EState *estate, int eflags)
 {
 	BitmapHeapScanState *scanstate;
 	RangeTblEntry *rtentry;
@@ -412,6 +510,8 @@ ExecInitBitmapHeapScan(BitmapHeapScan *node, EState *estate)
 	Oid			reloid;
 	Relation	currentRelation;
 
+  /* check for unsupported flags */
+  Assert(!(eflags & (EXEC_FLAG_BACKWARD | EXEC_FLAG_MARK)));
 	/*
 	 * create state structure
 	 */
@@ -498,7 +598,18 @@ ExecInitBitmapHeapScan(BitmapHeapScan *node, EState *estate)
 	 * relation's indexes, and we want to be sure we have acquired a lock
 	 * on the relation first.
 	 */
-	outerPlanState(scanstate) = ExecInitNode(outerPlan(node), estate);
+	outerPlanState(scanstate) = ExecInitNode(outerPlan(node), estate, eflags);
+
+	if (IsA(outerPlan(node), BitmapIndexScan))
+		node->inmem = 
+			(((BitmapIndexScan*)outerPlan(node))->indexam != 
+			 BITMAP_AM_OID);
+	else if (IsA(outerPlan(node), BitmapAnd))
+		node->inmem = ((BitmapAnd*)outerPlan(node))->inmem;
+	else if (IsA(outerPlan(node), BitmapOr))
+		node->inmem = ((BitmapOr*)outerPlan(node))->inmem;
+	else
+		node->inmem = true;
 
 	/*
 	 * all done.

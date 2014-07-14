@@ -861,4 +861,31 @@ extern Datum pg_prepared_xact(PG_FUNCTION_ARGS);
 /* catalog/pg_conversion.c */
 extern Datum pg_convert_using(PG_FUNCTION_ARGS);
 
+/* comparison functions for the bitmap index. */
+extern Datum bmint4cmp(PG_FUNCTION_ARGS);
+extern Datum bmint2cmp(PG_FUNCTION_ARGS);
+extern Datum bmint8cmp(PG_FUNCTION_ARGS);
+extern Datum bmint48cmp(PG_FUNCTION_ARGS);
+extern Datum bmint84cmp(PG_FUNCTION_ARGS);
+extern Datum bmint24cmp(PG_FUNCTION_ARGS);
+extern Datum bmint42cmp(PG_FUNCTION_ARGS);
+extern Datum bmint28cmp(PG_FUNCTION_ARGS);
+extern Datum bmint82cmp(PG_FUNCTION_ARGS);
+extern Datum bmboolcmp(PG_FUNCTION_ARGS);
+extern Datum bmcharcmp(PG_FUNCTION_ARGS);
+extern Datum bmtextcmp(PG_FUNCTION_ARGS);
+extern Datum bmabstimecmp(PG_FUNCTION_ARGS);
+extern Datum bmarraycmp(PG_FUNCTION_ARGS);
+extern Datum bmoidcmp(PG_FUNCTION_ARGS);
+extern Datum bmoidvectorcmp(PG_FUNCTION_ARGS);
+extern Datum bmnamecmp(PG_FUNCTION_ARGS);
+extern Datum bmname_pattern_cmp(PG_FUNCTION_ARGS);
+extern Datum bmfloat4cmp(PG_FUNCTION_ARGS);
+extern Datum bmfloat8cmp(PG_FUNCTION_ARGS);
+extern Datum bmfloat48cmp(PG_FUNCTION_ARGS);
+extern Datum bmfloat84cmp(PG_FUNCTION_ARGS);
+extern Datum bmreltimecmp(PG_FUNCTION_ARGS);
+extern Datum bmtintervalcmp(PG_FUNCTION_ARGS);
+extern Datum bmtext_pattern_cmp(PG_FUNCTION_ARGS);
+
 #endif   /* BUILTINS_H */

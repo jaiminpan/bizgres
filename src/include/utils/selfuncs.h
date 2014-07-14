@@ -127,5 +127,6 @@ extern Datum btcostestimate(PG_FUNCTION_ARGS);
 extern Datum rtcostestimate(PG_FUNCTION_ARGS);
 extern Datum hashcostestimate(PG_FUNCTION_ARGS);
 extern Datum gistcostestimate(PG_FUNCTION_ARGS);
+extern Datum bmcostestimate(PG_FUNCTION_ARGS);
 
 #endif   /* SELFUNCS_H */

@@ -670,4 +670,56 @@ DATA(insert (	2595	0 10 t	1515 ));
 DATA(insert (	2595	0 11 t	1514 ));
 DATA(insert (	2595	0 12 t	2590 ));
 
+
+/* the operators for the bitmap index. */
+DATA(insert (	2849	0 1 f  560 ));	/* abstime */
+DATA(insert (	2850	0 1 f 1070 ));	/* array */
+DATA(insert (	2851	0 1 f 1784 ));	/* bit */
+DATA(insert (	2852	0 1 f	91 ));	/* bool */
+DATA(insert (	2853	0 1 f 1054 ));	/* bpchar */
+DATA(insert (	2854	0 1 f 1955 ));	/* bytea */
+DATA(insert (	2855	0 1 f	92 ));	/* char */
+DATA(insert (	2856	0 1 f  820 ));	/* cidr */
+DATA(insert (	2857	0 1 f 1093 ));	/* date */
+DATA(insert (	2857 1114 1 f 2347 ));	/* date-timestamp */
+DATA(insert (	2857 1184 1 f 2360 ));	/* date-timestamptz */
+DATA(insert (	2858	0 1 f  620 ));	/* float4 */
+DATA(insert (	2858  701 1 f 1120 ));	/* float48 */
+DATA(insert (	2859	0 1 f  670 ));	/* float8 */
+DATA(insert (	2859  700 1 f 1130 ));	/* float84 */
+DATA(insert (	2860	0 1 f 1201 ));	/* inet */
+DATA(insert (	2861	0 1 f	94 ));	/* int2 */
+DATA(insert (	2861   23 1 f  532 ));	/* int24 */
+DATA(insert (	2861   20 1 f 1862 ));	/* int28 */
+DATA(insert (	2862	0 1 f	96 ));	/* int4 */
+DATA(insert (	2862   21 1 f  533 ));	/* int42 */
+DATA(insert (	2862   20 1 f	15 ));	/* int48 */
+DATA(insert (	2863	0 1 f  410 ));	/* int8 */
+DATA(insert (	2863   21 1 f 1868 ));	/* int82 */
+DATA(insert (	2863   23 1 f  416 ));	/* int84 */
+DATA(insert (	2864	0 1 f 1330 ));	/* interval */
+DATA(insert (	2865	0 1 f 1220 ));	/* macaddr */
+DATA(insert (	2866	0 1 f	93 ));	/* name */
+DATA(insert (	2867	0 1 f 1752 ));	/* numeric */
+DATA(insert (	2868	0 1 f  607 ));	/* oid */
+DATA(insert (	2869	0 1 f  649 ));	/* oidvector */
+DATA(insert (	2870	0 1 f	98 ));	/* text */
+DATA(insert (	2871	0 1 f 1108 ));	/* time */
+DATA(insert (	2872	0 1 f 1320 ));	/* timestamptz */
+DATA(insert (	2872 1082 1 f 2386 ));	/* timestamptz-date */
+DATA(insert (	2872 1114 1 f 2542 ));	/* timestamptz-timestamp */
+DATA(insert (	2873	0 1 f 1550 ));	/* timetz */
+DATA(insert (	2874	0 1 f 1804 ));	/* varbit */
+DATA(insert (	2875	0 1 f	98 ));	/* varchar */
+DATA(insert (	2876	0 1 f 2060 ));	/* timestamp */
+DATA(insert (	2876 1082 1 f 2373 ));	/* timestamp-date */
+DATA(insert (	2876 1184 1 f 2536 ));	/* timestamp-timestamptz */
+DATA(insert (	2877	0 1 f 2316 ));	/* text pattern */
+DATA(insert (	2878	0 1 f 2316 ));	/* varchar pattern */
+DATA(insert (	2879	0 1 f 2328 ));	/* bpchar pattern */
+DATA(insert (	2880	0 1 f 2334 ));	/* name pattern */
+DATA(insert (	2881	0 1 f  900 ));	/* money */
+DATA(insert (	2882	0 1 f  566 ));	/* reltime */
+DATA(insert (	2883	0 1 f  811 ));	/* tinterval */
+
 #endif   /* PG_AMOP_H */
